@@ -30,15 +30,20 @@
     ```
     git clone https://github.com/megamen-x/ARTEMIS.git
     ```
-    - Создание и активация виртуального окружения:
+    - Создание и активация виртуального окружения (Протестировано на **Python 3.10.10**):
     ```
     cd ./ARTEMIS
     python -m venv .venv
     .venv\Scripts\activate
     ```
-    - Уставновка зависимостей (**CUDA 12.1 required**):
+    - Уставновка зависимостей (при использовании **CUDA 12.1**):
     ```
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    pip3 install -r requirements.txt
+    ```
+    - Уставновка зависимостей (при использовании **CPU**):
+    ```
+    pip3 install torch torchvision torchaudio
     pip3 install -r requirements.txt
     ```
     - После установки зависимостей (5-7 минут):
@@ -47,5 +52,9 @@
     python manage.py makemigrations
     python manage.py migrate
     python manage.py runserver
+    ```
+    - В случае, если не работает стандратная команда makemigrations:
+    ```
+    python manage.py makemigrations main
     ```
 </details> 

@@ -33,6 +33,7 @@
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
 
+
 ## <h3 align="start"><a id="title2">Описание решения</a></h3>
 
 **Machine Learning:**
@@ -44,14 +45,13 @@
 
  - **Использованные модели:**
     - **```Computer Vision```**:
-      - ultralytics/YoloV9-Medium;
+      - ultralytics/YoloV9E;
 
-Ссылки на репозитории моделей:
-   - [YoloV9](https://github.com/ultralytics/ultralytics)
-   - [RT-DETR](https://github.com/orgs/ultralytics/discussions/2545)
+Ссылки на модели:
+   - [YoloV9](https://docs.ultralytics.com/models/yolov9/)
 
-Пример генерации на основе 10 изображений:
-   - [json](https://github.com/megamen-x/)
+<!-- Пример генерации на основе 10 изображений:
+   - [json](https://github.com/megamen-x/) -->
 
 Опробовать решение:
    - [ARTEMIS](https://huggingface.co/spaces/AtLan9/)
@@ -69,7 +69,6 @@
 
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
-
 
 
 ## <h3 align="start"><a id="title3">Тестирование решения</a></h3> 
@@ -91,15 +90,20 @@
     ```
     git clone https://github.com/megamen-x/ARTEMIS.git
     ```
-    - Создание и активация виртуального окружения (tested on python: 3.10.10):
+    - Создание и активация виртуального окружения (Протестировано на **Python 3.10.10**):
     ```
     cd ./ARTEMIS
     python -m venv .venv
     .venv\Scripts\activate
     ```
-    - Уставновка зависимостей (CUDA 12.1 required):
+    - Уставновка зависимостей (при использовании **CUDA 12.1**):
     ```
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    pip3 install -r requirements.txt
+    ```
+    - Уставновка зависимостей (при использовании **CPU**):
+    ```
+    pip3 install torch torchvision torchaudio
     pip3 install -r requirements.txt
     ```
     - После установки зависимостей (3-5 минут) можно запустить Gradio:
@@ -123,15 +127,20 @@
     ```
     git clone https://github.com/megamen-x/ARTEMIS.git
     ```
-    - Создание и активация виртуального окружения (tested on python: 3.10.10):
+    - Создание и активация виртуального окружения (Протестировано на **Python 3.10.10**):
     ```
     cd ./ARTEMIS
     python -m venv .venv
     .venv\Scripts\activate
     ```
-    - Уставновка зависимостей (**CUDA 12.1 required**):
+    - Уставновка зависимостей (при использовании **CUDA 12.1**):
     ```
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    pip3 install -r requirements.txt
+    ```
+    - Уставновка зависимостей (при использовании **CPU**):
+    ```
+    pip3 install torch torchvision torchaudio
     pip3 install -r requirements.txt
     ```
     - После установки зависимостей (5-7 минут):
@@ -140,6 +149,10 @@
     python manage.py makemigrations
     python manage.py migrate
     python manage.py runserver
+    ```
+    - В случае, если не работает стандратная команда makemigrations:
+    ```
+    python manage.py makemigrations main
     ```
 </details> 
 
@@ -185,7 +198,21 @@
     - Запустить ```./artemis/lib/main.dart``` в режиме ```Run and Debug```
 </details> 
 
+</br> 
+
+**Аппаратные требования**
+
+| Обеспечение | Требование |
+| :----------- | :---------- |
+| Платформа, ОС  | Windows (> 8.1), Linux (core > 5.15)    |
+| Python | 3.9.0 или 3.10.10 (рекомендовано) |
+| RAM  | 4 GB или более |
+| Свободное место на диске | > 2 GB |
+
+> *Решение может работать без графического ускорителя, однако его наличие будет способствовать увеличению скорости работы использованных моделей.*
+
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
+
 
 ## <h3 align="start"><a id="title4">Обновления</a></h3> 
 
