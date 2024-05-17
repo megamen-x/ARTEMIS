@@ -1,0 +1,103 @@
+name: LomaxApp
+description: megamen team project called LOMAX.
+
+publish_to: 'none'
+
+version: 1.1.0+1
+
+environment:
+  sdk: '>=3.1.5 <4.0.0'
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # ----- backend ----- #
+  http: ^1.1.0
+  # ----- system ----- #
+  mime: 1.0.4
+  path: ^1.8.3
+  archive: ^3.4.10
+  http_parser: ^4.0.2
+  image_picker: ^1.0.4
+  desktop_drop: ^0.4.4
+  url_launcher: ^6.1.14
+  flutter_svg: ^2.0.10+1
+  window_manager: ^0.3.8
+  flutter_acrylic: ^1.1.0
+  bitsdojo_window: ^0.1.6
+  filesystem_picker: ^3.1.0
+  form_field_validator: ^1.1.0
+  # ----- icons ----- #
+  cupertino_icons: ^1.0.2
+  smooth_page_indicator: ^1.1.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/system/Artemis.png"
+  min_sdk_android: 21 
+  web:
+    generate: true
+    image_path: "assets/images/system/Artemis.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/images/system/Artemis.png"
+    icon_size: 48 
+
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
+
+  flutter_test:
+    sdk: flutter
+  
+  flutter_lints: ^2.0.0
+
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/images/system/
+    - assets/images/team/
+
+  fonts:
+    - family: Limelight
+      fonts:
+        - asset: assets/fonts/Limelight-Regular.ttf
+          weight: 400
+      
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Light.ttf
+          weight: 400
+        
+    - family: pobeda
+      fonts:
+        - asset: assets/fonts/pobeda-bold.ttf
+          weight: 700
+        - asset: assets/fonts/pobeda-regular.ttf
+          weight: 500
+    
+    - family: Spectral
+      fonts:
+        - asset: assets/fonts/Spectral-Regular.ttf
+          weight: 500
+    
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Medium.ttf
+          weight: 700
