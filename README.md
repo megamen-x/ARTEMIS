@@ -44,14 +44,13 @@
 
  - **Использованные модели:**
     - **```Computer Vision```**:
-      - ultralytics/YoloV9-Medium;
+      - ultralytics/YoloV9E;
 
-Ссылки на репозитории моделей:
-   - [YoloV9](https://github.com/ultralytics/ultralytics)
-   - [RT-DETR](https://github.com/orgs/ultralytics/discussions/2545)
+Ссылки на модели:
+   - [YoloV9](https://docs.ultralytics.com/models/yolov9/)
 
-Пример генерации на основе 10 изображений:
-   - [json](https://github.com/megamen-x/)
+<!-- Пример генерации на основе 10 изображений:
+   - [json](https://github.com/megamen-x/) -->
 
 Опробовать решение:
    - [ARTEMIS](https://huggingface.co/spaces/AtLan9/)
