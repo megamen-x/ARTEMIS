@@ -83,7 +83,7 @@ def draw_boxes_from_list(image_path1, boxes_1, labels1):
         '2': (255, 128, 0),
         '3': (0, 255, 0),
         '4': (245, 0, 0)
-    }  # длинный, с оружием, без, короткий
+    }  # олень, кабарга, косуля
 
     image = cv2.imread(image_path1)
     height, width, _ = image.shape
@@ -97,6 +97,6 @@ def draw_boxes_from_list(image_path1, boxes_1, labels1):
             y_min = int(y_min * height)
             x_max = int(x_max * width)
             y_max = int(y_max * height)
-            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, 3)  # array here
+            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, 2)
 
     return image
