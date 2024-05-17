@@ -13,14 +13,16 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework import generics
-
+import pandas as pd
+import plotly
+import plotly.express as px
 
 from .serializers import ImageSerializer
-from .models import UploadImageTest
+from .models import UploadImageTest, UploadFile
 
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import update_session_auth_hash
-from .serializers import ChangePasswordSerializer
+from .serializers import ChangePasswordSerializer, FileSerializer
 from django.core.cache import cache
 
 from ultralytics import YOLO, RTDETR
@@ -41,18 +43,31 @@ def clear_dirs(path_to_directory):
     for i in os.listdir(path_to_directory):
         shutil.rmtree(path_to_directory + i)
 
+def create_dirs(path_to_directory):
+    p = Path(path_to_directory)
+    if 'archives' not in os.listdir(p):
+        os.makedirs(p / 'archives')
+    if 'jsons' not in os.listdir(p):
+        os.makedirs(p / 'jsons')
+    if 'zips' not in os.listdir(p):
+        os.makedirs(p / 'zips')
+    if 'plots' not in os.listdir(p):
+        os.makedirs(p / 'plots')
+
 class ListUploadedFiles(generics.ListAPIView):
     queryset = UploadImageTest.objects.all()
     serializer_class = ImageSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).filter(
             user=self.request.user
         )
 
-class ImageViewSet(generics.ListAPIView):
-    queryset = UploadImageTest.objects.all()
-    serializer_class = ImageSerializer
+
+class ZipViewSet(generics.ListAPIView):
+    queryset = UploadFile.objects.all()
+    serializer_class = FileSerializer
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
@@ -64,47 +79,141 @@ class ImageViewSet(generics.ListAPIView):
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
 
+        create_dirs('media/')
+
         json_ans = {"data": []}
 
-        for file in request.FILES.getlist('files'):
-            print(file.name)
-            FileSystemStorage(location='media/images/').save(file.name, file)
-            image = UploadImageTest.objects.create(image=file, user=request.user)
+        file = request.data.get('file')
+        FileSystemStorage(location='media/zips/').save(file.name, file)
 
-            boxes, _, labels = ensemble_boxes(
-                models=models,
-                path_to_image=('media/' + str(image.image)),
-                # weights=weights
+        with ZipFile('media/zips/' + file.name) as zf:
+            for name in zf.namelist():
+                zf.extract(name, 'media/images/')
+                if Path('media/images/' + name).suffix in ['.jpg', '.jpeg', '.png']:
+                    # image = UploadFile.objects.create(file=file.name, user=request.user)
+                    boxes, _, labels = ensemble_boxes(
+                        models=models,
+                        path_to_image=('media/images/' + name),
+                        # weights=weights
+                    )
+
+                    count_labels = count_classes(labels)
+
+                    bbox_image = draw_boxes_from_list(
+                        image_path1=('media/images/' + name),
+                        boxes_1=boxes,
+                        labels1=labels
+                    )
+                    imwrite('media/images/' + name, bbox_image)
+                    count_deer = count_labels['1']
+                    # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
+
+                    json_ans['data'].append(
+                         {'column1': name, 'column2': str(count_deer),'column3': ['Deer']})
+
+                    with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
+                        cur_zipfile.write('media/images/' + name, name)
+                # video
+                elif Path('media/images/' + file.name).suffix in ['.mp4', '.mkv', '.mov', '.MOV']:
+                    json_ans['data'].append(
+                        {'column1': str(file.name), 'column2': str(2), 'column3': ['Deer']})
+
+            df = pd.DataFrame({'class': ['Косуля', 'Олень', 'Кабарга'], 'count': [313, 1284, 6]})
+
+            fig = px.bar(df, x="class", y="count",
+                         color='class',
+                         color_discrete_map={"Косуля": "rgb(68, 96, 88)",
+                                             "Олень": "rgb(2, 176, 125)",
+                                             'Кабарга': 'rgb(9, 86, 81)'},
+                         template='plotly_dark',
+                         text_auto=True
+                         )
+            fig.update_layout(
+                plot_bgcolor='rgb(21, 21, 21)',
+                paper_bgcolor='rgb(21, 21, 21)',
+                width=500,
+                height=500,
+                showlegend=False
             )
+            fig.update_traces(textposition='outside')
+            fig.update_yaxes(title='Суммарное количество на фотографиях')
+            fig.update_xaxes(title='Вид оленя', )
 
-            count_labels = count_classes(labels)
+            fig.write_image("media/plots/deers_fig.jpeg")
 
-            bbox_image = draw_boxes_from_list(
-                image_path1=('media/' + str(image.image)),
-                boxes_1=boxes,
-                labels1=labels
-            )
-            imwrite('media/' + str(image.image), bbox_image)
-            count_deer = count_labels['1']
-            # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
-
-
-            if 'archives' not in os.listdir('media'):
-                os.makedirs('media/archives')
-            if 'jsons' not in os.listdir('media'):
-                os.makedirs('media/jsons')
-
-                # нужно убрать изменение имен файлов - в ответе пользователю должно идти оригинальное название
-                # deer_7.jpg сейчас конфертируется в deer_7_FneGAFh.jpg
-
-            json_ans['data'].append(
-                 {'column1': str(file.name), 'column2': str(count_deer),'column3': ['Deer']})
+            with open('media/jsons/data.txt', 'w') as outfile:
+                 json.dump(json_ans, outfile)
 
             with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
-                cur_zipfile.write('media/' + str(image.image), str(file.name))
+                cur_zipfile.write('media/jsons/data.txt', 'data.txt')
+                cur_zipfile.write("media/plots/deers_fig.jpeg", "deers_fig.jpeg")
 
-        with open('media/jsons/data.txt', 'w') as outfile:
-             json.dump(json_ans, outfile)
+        with open('media/archives/file.zip', 'rb') as cur_zipfile:
+            response = HttpResponse(cur_zipfile, content_type='application/zip')
+            response['Content-Disposition'] = f'attachment; filename=cur_zip_file.zip'
+
+        clear_dirs('media/')
+        return response
+
+
+class FilesViewSet(generics.ListAPIView):
+    queryset = UploadFile.objects.all()
+    serializer_class = FileSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        # print(request.FILES['files'])
+        # return HttpResponse(status=204)
+
+        # file = request.FILES['files']
+
+        if 'media' not in os.listdir('.'):
+            os.mkdir('media/')
+
+        if 'archives' not in os.listdir('media'):
+            os.makedirs('media/archives')
+        if 'jsons' not in os.listdir('media'):
+            os.makedirs('media/jsons')
+
+        json_ans = {"data": []}
+
+        for file in request.data.getlist('file'):
+            FileSystemStorage(location='media/images/').save(file.name, file)
+            # image
+            if Path('media/images/' + file.name).suffix in ['.jpg', '.jpeg', '.png']:
+                image = UploadFile.objects.create(file=file.name, user=request.user)
+                print(image.file)
+                boxes, _, labels = ensemble_boxes(
+                    models=models,
+                    path_to_image=('media/images/' + str(image.file)),
+                    # weights=weights
+                )
+
+                count_labels = count_classes(labels)
+
+                bbox_image = draw_boxes_from_list(
+                    image_path1=('media/images/' + str(image.file)),
+                    boxes_1=boxes,
+                    labels1=labels
+                )
+                imwrite('media/images/' + str(image.file), bbox_image)
+                count_deer = count_labels['1']
+                # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
+
+                json_ans['data'].append(
+                     {'column1': str(file.name), 'column2': str(count_deer),'column3': ['Deer']})
+
+                with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
+                    cur_zipfile.write('media/images/' + str(image.file), str(file.name))
+            # video
+            elif Path('media/images/' + file.name).suffix in ['.mp4', '.mkv', '.mov', '.MOV']:
+                video = UploadFile.objects.create(file='media/images/' + file.name, user=request.user)
+                print(video)
+                json_ans['data'].append(
+                    {'column1': str(file.name), 'column2': str(2), 'column3': ['Deer']})
+
+            with open('media/jsons/data.txt', 'w') as outfile:
+                 json.dump(json_ans, outfile)
 
         with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
             cur_zipfile.write('media/jsons/data.txt', 'data.txt')

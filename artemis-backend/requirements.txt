@@ -6,3 +6,6 @@ opencv-python
 djoser
 ensemble_boxes
 ultralytics
+pandas
+plotly
+kaleido

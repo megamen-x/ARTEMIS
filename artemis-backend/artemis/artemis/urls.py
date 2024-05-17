@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from main.views import ImageViewSet, UpdatePassword, ListUploadedFiles
+from main.views import FilesViewSet, UpdatePassword, ListUploadedFiles, ZipViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns = [
@@ -23,7 +23,8 @@ urlpatterns = [
     # path('sign/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/', include('djoser.urls')),
     re_path('^auth/', include('djoser.urls.authtoken')),
-    path('photo/', ImageViewSet.as_view(), name='upload'),
+    path('files/', FilesViewSet.as_view(), name='upload'),
+    path('zip/', ZipViewSet.as_view(), name='upload'),
     path('change/', UpdatePassword.as_view(), name='change'),
     path('list_files/', ListUploadedFiles.as_view(), name='list_files')
 ]
