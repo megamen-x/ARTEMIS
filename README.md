@@ -33,7 +33,6 @@
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
 
-***
 
 ## <h3 align="start"><a id="title2">Описание решения</a></h3>
 
@@ -71,7 +70,6 @@
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
 
-***
 
 ## <h3 align="start"><a id="title3">Тестирование решения</a></h3> 
 
@@ -216,7 +214,6 @@
 
 <p align="right">(<a href="#readme-top"><i>Вернуться наверх</i></a>)</p>
 
-***
 
 ## <h3 align="start"><a id="title4">Обновления</a></h3> 
 
