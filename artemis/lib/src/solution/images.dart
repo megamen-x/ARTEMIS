@@ -40,6 +40,7 @@ class ImagesState extends State<ImagesWidget> {
   ImagesState({ @required this.filesarr, this.images, this.dataEmptyFlag, this.prevpage, this.userData});
 
   bool loadingFlag = false;
+  bool loadingFlag2 = false;
   bool dataClearFlag = false;
   bool zipplot = false;
 
@@ -59,7 +60,7 @@ class ImagesState extends State<ImagesWidget> {
   Future<void> uploadZip(context) async {
 
     setState(() {
-      loadingFlag = true;
+      loadingFlag2 = true;
     });
 
     List<File>? zipfiles = [];
@@ -99,29 +100,31 @@ class ImagesState extends State<ImagesWidget> {
           setState(() {
             dataClearFlag = true;
             dataEmptyFlag = false;
-            loadingFlag = false;
+            loadingFlag2 = false;
           });
         }
 
       } on SocketException {
         setState(() {
           Sample.AlshowDialog(context, 'Нет соединения с сервером!', 'Проверьте состояние сервера и попробуйте снова');
-          loadingFlag = false;
+          loadingFlag2 = false;
         });
       } on HttpException {
         setState(() {
           Sample.AlshowDialog(context, "Не удалось найти метод post!", 'Проверьте состояние сервера и попробуйте снова');
-          loadingFlag = false;
+          loadingFlag2 = false;
         });
       } on FormatException {
         setState(() {
           Sample.AlshowDialog(context, "Неправильный формат ответа!", 'Проверьте состояние сервера и попробуйте снова');
-          loadingFlag = false;
+          loadingFlag2 = false;
         });
       }
 
     } else {
-      loadingFlag = false;
+      setState(() {
+        loadingFlag2 = false;
+      });
     }
    
   }
@@ -518,7 +521,7 @@ class ImagesState extends State<ImagesWidget> {
                                         ? const Center(child: SizedBox(width: 35, height: 35, child: CircularProgressIndicator(color: Color(0xFF000000) )))
                                         : const Icon(Icons.add_rounded, color: Color(0xFF000000), size: 35,),
                                     label: Text(
-                                      loadingFlag ? 'ОБРАБОТКА...' : ' ФОТО',
+                                      loadingFlag ? 'АНАЛИЗ...' : ' ФОТО',
                                       style: TextStyle(
                                         fontFamily: 'Inter', 
                                         fontSize: 23*fframe,
@@ -540,11 +543,11 @@ class ImagesState extends State<ImagesWidget> {
                                     width: 20*fframe,
                                   ),
                                   ElevatedButton.icon(
-                                    icon: loadingFlag
+                                    icon: loadingFlag2
                                         ? const Center(child: SizedBox(width: 35, height: 35, child: CircularProgressIndicator(color: Color(0xFF000000) )))
                                         : const Icon(Icons.add_rounded, color: Color(0xFF000000), size: 35,),
                                     label: Text(
-                                      loadingFlag ? 'ОБРАБОТКА...' : 'АРХИВ',
+                                      loadingFlag2 ? 'АНАЛИЗ...' : 'АРХИВ',
                                       style: TextStyle(
                                         fontFamily: 'Inter', 
                                         fontSize: 23*fframe,
@@ -568,7 +571,7 @@ class ImagesState extends State<ImagesWidget> {
                               // frame
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   //  table
                                   Column(
@@ -746,6 +749,7 @@ class ImagesState extends State<ImagesWidget> {
                                       if (!zipplot)
                                       Column(
                                         children: [
+                                          SizedBox(height: 30*fframe,),
                                           Text('КАК ПОЛЬЗОВАТЬСЯ?',
                                             textAlign: TextAlign.center, 
                                             style: TextStyle(
@@ -775,9 +779,9 @@ class ImagesState extends State<ImagesWidget> {
                                       else
                                       Column(
                                         children: [
-                                          SizedBox(height: 20*fframe,),
+                                          SizedBox(height: 60*fframe,),
                                           Container(
-                                            height: 410*fframe,
+                                            height: 400*fframe,
                                             width: 400*fframe,
                                             padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
                                             decoration: BoxDecoration(
