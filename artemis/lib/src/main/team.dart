@@ -156,7 +156,7 @@ class TeamState extends State<TeamWidget> {
                                         Navigator.push(
                                           context,
                                           PageRouteBuilder(
-                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: prevpage, userData:userData),
+                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: prevpage, userData:userData, newLabelData: []),
                                             transitionsBuilder: (_, animation, __, child) {
                                               return FadeTransition(
                                                 opacity: animation,

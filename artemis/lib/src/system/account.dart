@@ -170,7 +170,7 @@ class AccState extends State<AccWidget> {
                                         Navigator.push(
                                           context,
                                           PageRouteBuilder(
-                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: false, prevpage: prevpage, userData:userData),
+                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: false, prevpage: prevpage, userData:userData, newLabelData: []),
                                             transitionsBuilder: (_, animation, __, child) {
                                               return FadeTransition(
                                                 opacity: animation,

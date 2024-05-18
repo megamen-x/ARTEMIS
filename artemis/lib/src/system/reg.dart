@@ -70,10 +70,11 @@ class RegState extends State<RegWidget> {
           final Map parsed = jsonDecode(response2.body);
           data.update('auth_token', (value) => parsed['auth_token']);
           List<DataModel> empty = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
-          Navigator.push(
+          List<String> emptyList = ['', '', ''];
+          Navigator.push( 
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: RegWidget(prevpage: prevpage()), userData:userData),
+              pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: RegWidget(prevpage: prevpage()), userData:userData,  newLabelData: emptyList),
               transitionsBuilder: (_, animation, __, child) {
                 return FadeTransition(
                   opacity: animation,

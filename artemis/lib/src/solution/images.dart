@@ -27,17 +27,17 @@ List <String> files = [];
 
 
 class ImagesWidget extends StatefulWidget {
-  final filesarr, images, dataEmptyFlag, prevpage, userData;
-  ImagesWidget({super.key, @required this.filesarr, this.images, this.dataEmptyFlag, this.prevpage, this.userData});
+  final filesarr, images, dataEmptyFlag, prevpage, userData, newLabelData;
+  ImagesWidget({super.key, @required this.filesarr, this.images, this.dataEmptyFlag, this.prevpage, this.userData, this.newLabelData});
 
   @override
-  State<ImagesWidget> createState() => ImagesState(filesarr: filesarr, images: images, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData: userData);
+  State<ImagesWidget> createState() => ImagesState(filesarr: filesarr, images: images, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData: userData, newLabelData: newLabelData);
 }
 
 class ImagesState extends State<ImagesWidget> {
 
-  var filesarr, images, dataEmptyFlag, prevpage, userData;
-  ImagesState({ @required this.filesarr, this.images, this.dataEmptyFlag, this.prevpage, this.userData});
+  var filesarr, images, dataEmptyFlag, prevpage, userData, newLabelData;
+  ImagesState({ @required this.filesarr, this.images, this.dataEmptyFlag, this.prevpage, this.userData, this.newLabelData});
 
   bool loadingFlag = false;
   bool loadingFlag2 = false;
@@ -50,12 +50,17 @@ class ImagesState extends State<ImagesWidget> {
   late Uri fileprovider = Uri.parse('file:///${'$current/responce'}');
 
   List<String> newfileargs = [];
+  List<Map<String, dynamic>> jsonDataList = [];
   List<DataModel> dataList = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
   
   @override
   void initState() {
     super.initState();
     dataList = filesarr;
+    DataModel.updateDataModel(dataList, newLabelData);
+    jsonDataList = dataList.map((dataModel) => dataModel.toJson()).toList();
+    print('----------- json ----------');
+    print(jsonDataList);
   }
 
   final _imageController = PageController();
@@ -111,6 +116,7 @@ class ImagesState extends State<ImagesWidget> {
             dataEmptyFlag = false;
             loadingFlag2 = false;
             dataList = [];
+            zipplot = false;
           });
           setState(() {
             var tmp = dataMap.length;
@@ -228,6 +234,36 @@ class ImagesState extends State<ImagesWidget> {
     }
   }
 
+  Future<void> uploadNewData(context) async {
+    final json = jsonDataList;
+    try {
+      final response = await http.post(
+          Uri.parse('http://127.0.0.1:8000/active_learning/'),
+          headers: {
+            HttpHeaders.contentTypeHeader: 'application/json',
+            "Authorization": "Token ${userData['auth_token']}"
+          },
+          body: jsonEncode(json),
+      );
+      print(response.statusCode);
+    } on SocketException {
+        setState(() {
+          Sample.AlshowDialog(context, 'Нет соединения с сервером!', 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag2 = false;
+        });
+      } on HttpException {
+        setState(() {
+          Sample.AlshowDialog(context, "Не удалось найти метод post!", 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag2 = false;
+        });
+      } on FormatException {
+        setState(() {
+          Sample.AlshowDialog(context, "Неправильный формат ответа!", 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag2 = false;
+        });
+      }
+  }
+
   Future<void> _fileProvider() async {
     if (!await launchUrl(fileprovider)) {
       throw Exception('Could not launch $fileprovider');
@@ -244,6 +280,7 @@ class ImagesState extends State<ImagesWidget> {
     setState(() {
       dataEmptyFlag = false;
       zipplot = false;
+      loadingFlag2 = false;
     });
   }
 
@@ -789,7 +826,7 @@ class ImagesState extends State<ImagesWidget> {
                                                 "Дождитесь обработки;",
                                                 "Нажмите на нужную строку таблицы, чтобы детальнее изучить ее;",
                                                 "Очистите таблицу кнопкой “Очистка”;",
-                                                "Нажмите “Данные”, чтобы открыть папку с json-предсказанием модели.",
+                                                "Нажмите “Данные”, чтобы открыть папку с предсказаниями модели.",
                                             ], frame),
                                           ),
                                         ],
@@ -967,9 +1004,9 @@ class ImagesState extends State<ImagesWidget> {
 
 
 class DataModel {
-  final String column1;
-  final String column2;
-  final List<dynamic> column3;
+  String column1;
+  String column2;
+  List<dynamic> column3;
 
   DataModel({required this.column1, required this.column2, required this.column3});
 
@@ -979,5 +1016,43 @@ class DataModel {
       column2: json['column2'],
       column3: json['column3'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'column1': column1,
+      'column2': column2,
+      'column3': column3,
+    };
+  }
+
+  // static Map<String, dynamic> toJson(List<DataModel> dataList) {
+  //   for (DataModel dataModel in dataList) {
+      
+  //     return {
+  //       'column1': dataModel.column1,
+  //       'column2': dataModel.column2,
+  //       'column3': dataModel.column3,
+  //     };
+  //   }
+  //   return {
+  //       'column1': '',
+  //       'column2': '',
+  //       'column3': '',
+  //     };
+  // }
+
+  static void updateDataModel(List<DataModel> dataList, List<String> newData) {
+    final String matchString = newData[0];
+    final String newColumn2 = newData[1];
+    final List<String> newColumn3 = [newData[2]];
+
+    for (DataModel dataModel in dataList) {
+      if (dataModel.column1 == matchString) {
+        dataModel.column2 = newColumn2;
+        dataModel.column3 = newColumn3;
+        break;
+      }
+    }
   }
 }

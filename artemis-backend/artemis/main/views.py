@@ -194,9 +194,9 @@ class FilesViewSet(generics.ListAPIView):
         # file = request.FILES['files']
 
         data = request.data.getlist('file')
-        if data is None:
+        if len(data) == 0:
             data = request.FILES.getlist('files')
-
+        print(data)
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
 

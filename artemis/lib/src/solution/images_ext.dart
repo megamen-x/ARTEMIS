@@ -56,9 +56,8 @@ class ExtImagesState extends State<ExtImagesWidget> {
 
   void item() {
     substring = fileargs[0];
-    print(images);
-    print(fileargs);
-    print(substring);
+    // print(images);
+    // print(fileargs);
     newindex = images.indexOf(images.where((element) => element.contains(substring) as bool).toList()[0]);
   }
 
@@ -66,6 +65,83 @@ class ExtImagesState extends State<ExtImagesWidget> {
   void initState() {
     super.initState();
     item();
+  }
+
+  void NewDataLabel(context,fileargs) {
+    showDialog(
+      context: context, 
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF224138),
+          shadowColor: const Color.fromARGB(79, 34, 65, 56),
+          title: Text('Дополнительная разметка', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 24,fontWeight: FontWeight.w500, height: 1.3,),),
+          content: Container(
+            height: 100,
+            child: Column(
+              children: [
+                Text('Определите новый класс животных на фотографии', textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 20,fontWeight: FontWeight.w400, height: 1.3,),),
+                SizedBox(
+                  height: 23,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      height: 50, 
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(7.0),border: Border.all(color: const Color(0xFFFFFFFF), width: 1)),
+                      child: MaterialButton(
+                        onPressed: () {setState(() {fileargs[2] = 'Выброс';}); Navigator.pop(context);}, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0),),
+                        child: const Text('Выброс', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 20,fontWeight: FontWeight.w500, height: 1.3,),),
+                        ),
+                    ),
+                    Container(
+                      height: 50, 
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(7.0),border: Border.all(color: const Color(0xFFFFFFFF), width: 1)),
+                      child: MaterialButton(
+                        onPressed: () {setState(() {fileargs[2] = 'Косуля - Capreolus';}); Navigator.pop(context);}, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0),),
+                        child: const Text('Косуля', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 20,fontWeight: FontWeight.w500, height: 1.3,),),
+                        ),
+                    ),
+                    Container(
+                      height: 50, 
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(7.0),border: Border.all(color: const Color(0xFFFFFFFF), width: 1)),
+                      child: MaterialButton(
+                        onPressed: () {setState(() {fileargs[2] = 'Олень - Cervus';}); Navigator.pop(context);}, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0),),
+                        child: const Text('Олень', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 20,fontWeight: FontWeight.w500, height: 1.3,),),
+                        ),
+                    ),
+                    Container(
+                      height: 50, 
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(7.0),border: Border.all(color: const Color(0xFFFFFFFF), width: 1)),
+                      child: MaterialButton(
+                        onPressed: () {setState(() {fileargs[2] = 'Кабарга - Moschus';}); Navigator.pop(context);}, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7.0),),
+                        child: const Text('Кабарга', textAlign: TextAlign.center, style: TextStyle(color: Color(0xFFFFFFFF),fontFamily: 'Inter',fontSize: 20,fontWeight: FontWeight.w500, height: 1.3,),),
+                        ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.close),
+              color: Colors.white,
+              tooltip: 'Выйти из меню разметки',
+              onPressed: () {Navigator.pop(context);},
+            ),
+          ],
+        );
+      }
+    );
   }
 
   
@@ -326,7 +402,7 @@ class ExtImagesState extends State<ExtImagesWidget> {
                                     Navigator.push(
                                       context,
                                       PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: dataList, images: images, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData:userData),
+                                        pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: dataList, images: images, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData:userData, newLabelData: fileargs),
                                         transitionsBuilder: (_, animation, __, child) {
                                           return FadeTransition(
                                             opacity: animation,
@@ -554,38 +630,7 @@ class ExtImagesState extends State<ExtImagesWidget> {
                                                         ),
                                                         child: MaterialButton(
                                                           onPressed: () {
-                                                            
-                                                          },
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(20.0*fframe),
-                                                          ),
-                                                          height: 55*fframe,
-                                                          child: Text('Ошибка детектора', 
-                                                            textAlign: TextAlign.center, 
-                                                            style: TextStyle(
-                                                              color: Color(0xFFF9F8F6),
-                                                              fontFamily: 'Inter',
-                                                              fontSize: 24*fframe,
-                                                              fontWeight: FontWeight.w500,
-                                                              height: 1.3*fframe/frame,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: 20*fframe,
-                                                      ),
-                                                      Container(
-                                                        height: 55*fframe,
-                                                        padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
-                                                        decoration: BoxDecoration(
-                                                          // color: Color(0xFFF9F8F6),
-                                                          borderRadius: BorderRadius.circular(20.0*fframe),
-                                                          border: Border.all(color: Color(0xFF0BC776), width: 3*fframe)
-                                                        ),
-                                                        child: MaterialButton(
-                                                          onPressed: () {
-                                                            
+                                                            NewDataLabel(context, fileargs);
                                                           },
                                                           shape: RoundedRectangleBorder(
                                                             borderRadius: BorderRadius.circular(20.0*fframe),

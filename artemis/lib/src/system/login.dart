@@ -62,10 +62,11 @@ class LoginState extends State<LoginWidget> {
         final Map parsedData = jsonDecode(responseData.body);
         data.update('email', (value) => parsedData['email']);
         List<DataModel> empty = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
+        List<String> emptyList = ['', '', ''];
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: LoginWidget(prevpage: WelcomeWidget()), userData:userData),
+            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: true, prevpage: LoginWidget(prevpage: WelcomeWidget()), userData:userData, newLabelData: emptyList),
             transitionsBuilder: (_, animation, __, child) {
               return FadeTransition(
                 opacity: animation,
