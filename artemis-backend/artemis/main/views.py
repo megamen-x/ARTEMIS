@@ -33,9 +33,9 @@ from ml.ensemble import ensemble_boxes, count_classes
 from ml.main import load_model, detections
 
 deer_names = {
-    'Deer': {'ru': 'Олень', 'lat': 'Cervus'},
-    'Musk Deer': {'ru': 'Кабарга', 'lat': 'Moschus'},
-    'Roe Deer': {'ru': 'Косуля', 'lat': 'Capreolus'},
+    'Deer': 'Олень - Cervus',
+    'Musk Deer': 'Кабарга - Moschus',
+    'Roe Deer': 'Косуля - Capreolus',
 }
 
 
@@ -220,8 +220,7 @@ class FilesViewSet(generics.ListAPIView):
 
                 json_ans['data'].append(
                     {'column1': str(file.name), 'column2': str(count_deer),
-                     'column3': [deer_names[p]['ru'] for p in pred],
-                     'column4': [deer_names[p]['lat'] for p in pred]})
+                     'column3': [deer_names[p] for p in pred]})
 
                 with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                     cur_zipfile.write('media/images/' + str(image.file), str(file.name))
