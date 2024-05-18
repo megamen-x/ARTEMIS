@@ -29,15 +29,23 @@ from ultralytics import YOLO, RTDETR
 sys.path.append('../ml')
 from ml.cv2_converter import draw_boxes_from_list
 from ml.ensemble import ensemble_boxes, count_classes
+from ml.main import load_model, detections
 
-yolo_cache_key = 'model_cache'
-yolo = cache.get(yolo_cache_key)
+detector_cache_key = 'detector_cache'
+detector = cache.get(detector_cache_key)
 
-if yolo is None:
-    yolo = YOLO(os.path.join('ml', 'best.pt'))
-    cache.set(yolo_cache_key, yolo, None)
+model_cache_key = 'model_cache'
+model = cache.get(model_cache_key)
 
-models = [yolo, ]
+if detector is None:
+    detector = YOLO(os.path.join('ml', 'best.pt'))
+    cache.set(detector_cache_key, detector, None)
+
+if model is None:
+    model = load_model(num_classes=3, path_to_model=os.path.join('ml', 'model_epoch_11.pt'), pretrained=False)
+    cache.set(model_cache_key, model, None)
+
+models = [detector, ]
 
 def clear_dirs(path_to_directory):
     for i in os.listdir(path_to_directory):
@@ -83,7 +91,7 @@ class ZipViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        file = request.data.get('file')
+        file = request.FILES.get('files')
         FileSystemStorage(location='media/zips/').save(file.name, file)
 
         with ZipFile('media/zips/' + file.name) as zf:
@@ -91,6 +99,7 @@ class ZipViewSet(generics.ListAPIView):
                 zf.extract(name, 'media/images/')
                 if Path('media/images/' + name).suffix in ['.jpg', '.jpeg', '.png']:
                     # image = UploadFile.objects.create(file=file.name, user=request.user)
+
                     boxes, _, labels = ensemble_boxes(
                         models=models,
                         path_to_image=('media/images/' + name),
@@ -106,10 +115,12 @@ class ZipViewSet(generics.ListAPIView):
                     )
                     imwrite('media/images/' + name, bbox_image)
                     count_deer = count_labels['1']
-                    # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
+
+                    pred = detections(detector, model, 'media/images/' + name)
+                    # print(pred)
 
                     json_ans['data'].append(
-                         {'column1': name, 'column2': str(count_deer),'column3': ['Deer']})
+                         {'column1': name, 'column2': str(count_deer),'column3': pred})
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
@@ -177,10 +188,10 @@ class FilesViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        for file in request.data.getlist('file'):
+        for file in request.FILES.getlist('files'):
             FileSystemStorage(location='media/images/').save(file.name, file)
             # image
-            if Path('media/images/' + file.name).suffix in ['.jpg', '.jpeg', '.png']:
+            if Path('media/images/' + file.name).suffix in ['.jpg', '.jpeg', '.png', '.JPG']:
                 image = UploadFile.objects.create(file=file.name, user=request.user)
                 print(image.file)
                 boxes, _, labels = ensemble_boxes(
@@ -200,8 +211,11 @@ class FilesViewSet(generics.ListAPIView):
                 count_deer = count_labels['1']
                 # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
 
+                pred = detections(detector, model, 'media/images/' + str(image.file))
+                print(pred)
+
                 json_ans['data'].append(
-                     {'column1': str(file.name), 'column2': str(count_deer),'column3': ['Deer']})
+                     {'column1': str(file.name), 'column2': str(count_deer),'column3': [pred]})
 
                 with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                     cur_zipfile.write('media/images/' + str(image.file), str(file.name))

@@ -109,13 +109,3 @@ def detections(detection_model, classifier_model, path_to_image, verbose=True):
             return max(set(preds), key=preds.count)
     else:
         return None
-
-
-if __name__ == '__main__':
-    path_to_model = 'model_epoch_11.pt'
-
-    detector = YOLO('best.pt')
-    model = load_model(num_classes=3, path_to_model=path_to_model, pretrained=False)
-
-    pred = detections(detector, model, 'test_files/bot_deer_46_0.jpg')
-    print(pred)
