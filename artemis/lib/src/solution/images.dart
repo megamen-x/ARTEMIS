@@ -519,14 +519,14 @@ class ImagesState extends State<ImagesWidget> {
                       color: Color(0xFF14342B),
                       borderRadius: BorderRadius.circular(30.0*fframe),
                     ),
-                    padding: EdgeInsets.fromLTRB(20*fframe, 30*fframe, 20*fframe, 30*fframe),
+                    padding: EdgeInsets.fromLTRB(0*fframe, 30*fframe, 0*fframe, 30*fframe),
                     child: 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          width: 1360*fframe,
+                          // width: 1360*fframe,
                           padding: EdgeInsets.fromLTRB(0*fframe, 0*fframe, 0*fframe, 0*fframe),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -601,7 +601,7 @@ class ImagesState extends State<ImagesWidget> {
                                         style: TextStyle(
                                           color: Color(0xFFFFFFFF),
                                           fontFamily: 'pobeda',
-                                          fontSize: 45*fframe,
+                                          fontSize: 42*fframe,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: 5*fframe/frame,
                                           height: 1.3*fframe/frame,
@@ -612,13 +612,11 @@ class ImagesState extends State<ImagesWidget> {
                                       ),
                                       Container(
                                         width: 830*fframe,
-                                        height: 550*fframe,
+                                        height: 540*fframe,
                                         decoration: BoxDecoration(
-                                          // 0xFF305D50
                                           color: Color(0xFFFFFFFF),
                                           borderRadius: BorderRadius.circular(20.0*fframe),
                                         ),
-                                        // padding: EdgeInsets.symmetric(horizontal: 30*fframe, vertical: 25*fframe),
                                         child: 
                                         SingleChildScrollView(
                                           scrollDirection: Axis.vertical,
@@ -775,7 +773,7 @@ class ImagesState extends State<ImagesWidget> {
                                             style: TextStyle(
                                               color: Color(0xFFFFFFFF),
                                               fontFamily: 'pobeda',
-                                              fontSize: 42*fframe,
+                                              fontSize: 40*fframe,
                                               fontWeight: FontWeight.w700,
                                               letterSpacing: 5*fframe/frame,
                                               height: 1.3*fframe/frame,
@@ -799,18 +797,18 @@ class ImagesState extends State<ImagesWidget> {
                                       else
                                       Column(
                                         children: [
-                                          SizedBox(height: 60*fframe,),
+                                          SizedBox(height: 65*fframe,),
                                           Container(
-                                            height: 400*fframe,
-                                            width: 400*fframe,
+                                            height: 500*fframe,
+                                            width: 500*fframe,
                                             padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
                                             decoration: BoxDecoration(
                                               color: Color(0xFF151515),
-                                              borderRadius: BorderRadius.circular(20.0*fframe),
+                                              borderRadius: BorderRadius.circular(12.0*fframe),
                                             ),
                                             child: 
                                             Padding(
-                                              padding: const EdgeInsets.all(8.0),
+                                              padding: EdgeInsets.fromLTRB(7*fframe, 3*fframe, 0*fframe, 2*fframe),
                                               child: PageView.builder(
                                                 controller: _imageController,
                                                 scrollDirection: Axis.horizontal,
@@ -820,7 +818,7 @@ class ImagesState extends State<ImagesWidget> {
                                                       Image.file(File(plotName),
                                                         height: 420*frame,
                                                         width: MediaQuery.of(context).size.width * 1,
-                                                        fit: BoxFit.contain,
+                                                        fit: BoxFit.fitHeight,
                                                       ),
                                                   );
                                                 },
@@ -830,7 +828,7 @@ class ImagesState extends State<ImagesWidget> {
                                         ],
                                       ),
                                       SizedBox(
-                                        height: 20*fframe,
+                                        height: 15*fframe,
                                       ),
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.start,
@@ -901,12 +899,15 @@ class ImagesState extends State<ImagesWidget> {
                                           ),
                                         ],
                                       ),
+                                      if (!zipplot)
                                       SizedBox(height: 20*fframe,),
+                                      if (!zipplot)
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.start,
                                         crossAxisAlignment: CrossAxisAlignment.center,
                                         children: <Widget>[
                                           // download
+                                          
                                           Container(
                                             height: 50*fframe,
                                             decoration: BoxDecoration(
