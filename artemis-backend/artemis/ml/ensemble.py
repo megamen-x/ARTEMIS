@@ -114,3 +114,11 @@ def count_classes(labels: List[int]) -> Dict[str, int]:
 
     return ans
 
+
+def count_classes_model(ans: Dict[str, int], labels: List[int]) -> Dict[str, int]:
+
+    for label in labels:
+        ans[label] += 1
+
+    return ans
+

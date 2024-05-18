@@ -29,7 +29,7 @@ from django.core.cache import cache
 from ultralytics import YOLO, RTDETR
 sys.path.append('../ml')
 from ml.cv2_converter import draw_boxes_from_list
-from ml.ensemble import ensemble_boxes, count_classes
+from ml.ensemble import ensemble_boxes, count_classes, count_classes_model
 from ml.main import load_model, detections
 
 deer_names = {
@@ -98,8 +98,11 @@ class ZipViewSet(generics.ListAPIView):
         create_dirs('media/')
 
         json_ans = {"data": []}
+        count_label_model = {'Musk Deer': 0,
+                             'Deer': 0,
+                             'Roe Deer': 0}
 
-        file = request.FILES.get('files')
+        file = request.data.get('file')
         FileSystemStorage(location='media/zips/').save(file.name, file)
 
         with ZipFile('media/zips/' + file.name) as zf:
@@ -114,7 +117,7 @@ class ZipViewSet(generics.ListAPIView):
                         # weights=weights
                     )
 
-                    count_labels = count_classes(labels)
+                    count_label_detector = count_classes(labels)
 
                     bbox_image = draw_boxes_from_list(
                         image_path1=('media/images/' + name),
@@ -122,19 +125,22 @@ class ZipViewSet(generics.ListAPIView):
                         labels1=labels
                     )
                     imwrite('media/images/' + name, bbox_image)
-                    count_deer = count_labels['1']
 
                     pred = detections(boxes, model, 'media/images/' + name)
                     if isinstance(pred, str):
                         pred = [pred, ]
+
+                    count_label_model = count_classes_model(count_label_model, pred)
+
                     json_ans['data'].append(
-                         {'column1': name, 'column2': str(count_deer),
+                         {'column1': name, 'column2': str(count_label_detector['1']),
                           'column3': [deer_names[p] for p in pred]})
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
 
-            df = pd.DataFrame({'class': ['Косуля', 'Олень', 'Кабарга'], 'count': [313, 1284, 6]})
+            df = pd.DataFrame({'class': ['Кабарга', 'Олень', 'Косуля'],
+                               'count': count_label_model.values()})
 
             fig = px.bar(df, x="class", y="count",
                          color='class',
@@ -186,14 +192,14 @@ class FilesViewSet(generics.ListAPIView):
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
 
-        if 'archives' not in os.listdir('media'):
-            os.makedirs('media/archives')
-        if 'jsons' not in os.listdir('media'):
-            os.makedirs('media/jsons')
+        create_dirs('media/')
 
         json_ans = {"data": []}
+        count_label_model = {'Musk Deer': 0,
+                             'Deer': 0,
+                             'Roe Deer': 0,}
 
-        for file in request.FILES.getlist('files'):
+        for file in request.data.getlist('file'):
             FileSystemStorage(location='media/images/').save(file.name, file)
             # image
             if Path('media/images/' + file.name).suffix.lower() in ['.jpg', '.jpeg', '.png']:
@@ -203,8 +209,7 @@ class FilesViewSet(generics.ListAPIView):
                     path_to_image=('media/images/' + str(image.file)),
                     # weights=weights
                 )
-
-                count_labels = count_classes(labels)
+                count_label_detector = count_classes(labels)
 
                 bbox_image = draw_boxes_from_list(
                     image_path1=('media/images/' + str(image.file)),
@@ -212,24 +217,50 @@ class FilesViewSet(generics.ListAPIView):
                     labels1=labels
                 )
                 imwrite('media/images/' + str(image.file), bbox_image)
-                count_deer = count_labels['1']
 
                 pred = detections(boxes, model, 'media/images/' + str(image.file))
                 if isinstance(pred, str):
                     pred = [pred, ]
 
+                count_label_model = count_classes_model(count_label_model, pred)
+
                 json_ans['data'].append(
-                    {'column1': str(file.name), 'column2': str(count_deer),
+                    {'column1': str(file.name), 'column2': str(count_label_detector['1']),
                      'column3': [deer_names[p] for p in pred]})
 
                 with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                     cur_zipfile.write('media/images/' + str(image.file), str(file.name))
+
+            df = pd.DataFrame({'class': ['Косуля', 'Олень', 'Кабарга'],
+                               'count': list(count_label_model.values())})
+
+            fig = px.bar(df, x="class", y="count",
+                         color='class',
+                         color_discrete_map={"Косуля": "rgb(68, 96, 88)",
+                                             "Олень": "rgb(2, 176, 125)",
+                                             'Кабарга': 'rgb(9, 86, 81)'},
+                         template='plotly_dark',
+                         text_auto=True
+                         )
+            fig.update_layout(
+                plot_bgcolor='rgb(21, 21, 21)',
+                paper_bgcolor='rgb(21, 21, 21)',
+                width=500,
+                height=500,
+                showlegend=False
+            )
+            fig.update_traces(textposition='outside')
+            fig.update_yaxes(title='Суммарное количество на фотографиях')
+            fig.update_xaxes(title='Вид оленя', )
+
+            fig.write_image("media/plots/deers_fig.jpeg", format='jpeg', engine='kaleido')
 
             with open('media/jsons/data.txt', 'w') as outfile:
                  json.dump(json_ans, outfile)
 
         with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
             cur_zipfile.write('media/jsons/data.txt', 'data.txt')
+            cur_zipfile.write("media/plots/deers_fig.jpeg", "deers_fig.jpeg")
 
         with open('media/archives/file.zip', 'rb') as cur_zipfile:
             response = HttpResponse(cur_zipfile, content_type='application/zip')
