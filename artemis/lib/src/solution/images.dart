@@ -8,6 +8,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -54,6 +55,76 @@ class ImagesState extends State<ImagesWidget> {
     dataList = filesarr;
   }
 
+  Future<void> uploadZip(context) async {
+
+    setState(() {
+      loadingFlag = true;
+    });
+
+    List<File>? zipfiles = [];
+    List<String>? pathFiles = [];
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip',],
+    );
+    if (result != null) {
+      zipfiles = result.paths.map((path) => File(path!)).toList();
+      for (var i = 0; i < zipfiles.length; i++) {
+        if (Platform.isWindows) {
+          pathFiles.add(zipfiles[i].path.replaceAll('\\', '/'));
+        }
+        if (Platform.isLinux) {
+          pathFiles.add(zipfiles[i].path);
+        }
+      }
+      try {
+        var  postUri = Uri.parse('http://127.0.0.1:8000/zip/');
+        var request = http.MultipartRequest('POST', postUri);
+        for (var i = 0; i < pathFiles.length; i++) {
+          String? mediaType = lookupMimeType(pathFiles[i].split("/").last);
+          request.files.add(await http.MultipartFile.fromPath('files', pathFiles[i], filename: pathFiles[i].split("/").last, contentType: mediaType != null ? MediaType.parse(mediaType) : null));
+        }
+        Map<String, String> userDataString = {
+          "Authorization": "Token ${userData['auth_token']}"
+        };
+        request.headers.addAll(userDataString);
+        var streamedResponse  = await request.send();
+        var response = await http.Response.fromStream(streamedResponse);
+        print(response.statusCode);
+        if (response.statusCode == 200) {
+          unzipFileFromResponse(response.bodyBytes);
+
+          setState(() {
+            dataClearFlag = true;
+            dataEmptyFlag = false;
+            loadingFlag = false;
+          });
+        }
+
+      } on SocketException {
+        setState(() {
+          Sample.AlshowDialog(context, 'Нет соединения с сервером!', 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag = false;
+        });
+      } on HttpException {
+        setState(() {
+          Sample.AlshowDialog(context, "Не удалось найти метод post!", 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag = false;
+        });
+      } on FormatException {
+        setState(() {
+          Sample.AlshowDialog(context, "Неправильный формат ответа!", 'Проверьте состояние сервера и попробуйте снова');
+          loadingFlag = false;
+        });
+      }
+
+    } else {
+      loadingFlag = false;
+    }
+   
+  }
+
   Future<void> uploadImage(context) async {
     setState(() {
       loadingFlag = true;
@@ -76,46 +147,32 @@ class ImagesState extends State<ImagesWidget> {
       }
     }
     try {    
-      var  postUri = Uri.parse('http://127.0.0.1:8000/photo/');
+      var  postUri = Uri.parse('http://127.0.0.1:8000/files/');
       var request = http.MultipartRequest('POST', postUri);
-
       for (var i = 0; i < pathFiles.length; i++) {
         String? mediaType = lookupMimeType(pathFiles[i].split("/").last);
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'files', 
-            pathFiles[i], 
-            filename: pathFiles[i].split("/").last, 
-            contentType: mediaType != null ? MediaType.parse(mediaType) : null,
-          ),
-        );
+        request.files.add(await http.MultipartFile.fromPath('files', pathFiles[i], filename: pathFiles[i].split("/").last,  contentType: mediaType != null ? MediaType.parse(mediaType) : null,),);
       }
       Map<String, String> userDataString = {
         "Authorization": "Token ${userData['auth_token']}"
       };
-
       request.headers.addAll(userDataString);
       var streamedResponse  = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
-
       if (response.statusCode == 200) {
         unzipFileFromResponse(response.bodyBytes);
         String path = '';
-        if (Platform.isWindows || Platform.isLinux) {
-          path = "./responce/data.txt";
-        }
+        if (Platform.isWindows || Platform.isLinux) path = "./responce/data.txt";
         File dataFile = File(path);
         String dataString = dataFile.readAsStringSync();
         final responceMap = jsonDecode(dataString);
         final dataMap = jsonDecode(jsonEncode(responceMap["data"]));
-        
         setState(() {
           dataClearFlag = true;
           dataEmptyFlag = false;
           loadingFlag = false;
           dataList = [];
         });
-
         setState(() {
           var tmp = dataMap.length;
           for (var i = 0; i < tmp; i++) {
@@ -157,9 +214,7 @@ class ImagesState extends State<ImagesWidget> {
 
   Future<void> clearData() async {
     if (Platform.isWindows || Platform.isLinux) {
-      // images = [
-      //   "./assets/images/loader.png",
-      // ];
+      images = [];
       dataList = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
       deleteFilesInFolder("./responce");
     }
@@ -188,7 +243,7 @@ class ImagesState extends State<ImagesWidget> {
       final filename = file.name;
       if (file.isFile) {
         final data = file.content as List<int>;
-        if (filename.contains('.jpg') || filename.contains('.jpeg') || filename.contains('.png') || filename.contains('.bmp')) {
+        if (filename.contains('.jpg') || filename.contains('.JPG') || filename.contains('.jpeg') || filename.contains('.JPEG') || filename.contains('.png')|| filename.contains('.PNG') || filename.contains('.bmp')) {
           if (Platform.isWindows || Platform.isLinux) {
             File('responce/$filename')
             ..createSync(recursive: true)
@@ -454,31 +509,60 @@ class ImagesState extends State<ImagesWidget> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               // btn add
-                              Center(
-                                child: 
-                                ElevatedButton.icon(
-                                  icon: loadingFlag
-                                      ? const Center(child: SizedBox(width: 35, height: 35, child: CircularProgressIndicator(color: Color(0xFF000000) )))
-                                      : const Icon(Icons.add_rounded, color: Color(0xFF000000), size: 35,),
-                                  label: Text(
-                                    loadingFlag ? 'ОБРАБОТКА...' : 'ВЫБРАТЬ ФОТО',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter', 
-                                      fontSize: 23*fframe,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.3*fframe/frame,
-                                      color: Color(0xFF000000),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  ElevatedButton.icon(
+                                    icon: loadingFlag
+                                        ? const Center(child: SizedBox(width: 35, height: 35, child: CircularProgressIndicator(color: Color(0xFF000000) )))
+                                        : const Icon(Icons.add_rounded, color: Color(0xFF000000), size: 35,),
+                                    label: Text(
+                                      loadingFlag ? 'ОБРАБОТКА...' : ' ФОТО',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter', 
+                                        fontSize: 23*fframe,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.3*fframe/frame,
+                                        color: Color(0xFF000000),
+                                      ),
+                                    ),
+                                    onPressed: () => loadingFlag ? null : uploadImage(context),
+                                    style: 
+                                    ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                                      side: const BorderSide(color: Color(0xFFF9F8F6), width: 0),
+                                      padding: const EdgeInsets.all(14),
+                                      backgroundColor: Color(0xFFF9F8F6),
                                     ),
                                   ),
-                                  onPressed: () => loadingFlag ? null : uploadImage(context),
-                                  style: 
-                                  ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-                                    side: const BorderSide(color: Color(0xFFF9F8F6), width: 0),
-                                    padding: const EdgeInsets.all(14),
-                                    backgroundColor: Color(0xFFF9F8F6),
+                                  SizedBox(
+                                    width: 20*fframe,
                                   ),
-                                ),
+                                  ElevatedButton.icon(
+                                    icon: loadingFlag
+                                        ? const Center(child: SizedBox(width: 35, height: 35, child: CircularProgressIndicator(color: Color(0xFF000000) )))
+                                        : const Icon(Icons.add_rounded, color: Color(0xFF000000), size: 35,),
+                                    label: Text(
+                                      loadingFlag ? 'ОБРАБОТКА...' : 'АРХИВ',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter', 
+                                        fontSize: 23*fframe,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.3*fframe/frame,
+                                        color: Color(0xFF000000),
+                                      ),
+                                    ),
+                                    onPressed: () => loadingFlag ? null : uploadZip(context),
+                                    // onPressed: () { loadingFlag = false; },
+                                    style: 
+                                    ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+                                      side: const BorderSide(color: Color(0xFFF9F8F6), width: 0),
+                                      padding: const EdgeInsets.all(14),
+                                      backgroundColor: Color(0xFFF9F8F6),
+                                    ),
+                                  ),
+                                ],
                               ),
                               // frame
                               Row(

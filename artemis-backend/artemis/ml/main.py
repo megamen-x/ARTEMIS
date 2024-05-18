@@ -72,7 +72,7 @@ def predict(
     weights = models.EfficientNet_V2_S_Weights.IMAGENET1K_V1
     preprocess = weights.transforms()
 
-    batch = preprocess(img).unsqueeze(0)
+    batch = preprocess(img).unsqueeze(0).to(CFG.device)
     prediction = model(batch).squeeze(0).softmax(0)
     class_id = prediction.argmax().item()
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:path/path.dart' as path;
@@ -14,6 +15,10 @@ Future<void> main() async {
   if (Platform.isWindows) {
     await Window.hideWindowControls();
   }
+  // FlutterError.onError = (details) {
+  //   FlutterError.presentError(details);
+  //   if (kReleaseMode) exit(1);
+  // };
   runApp(const MyApp());
   if (Platform.isWindows) {
     doWhenWindowReady(() {

@@ -56,6 +56,9 @@ class ExtImagesState extends State<ExtImagesWidget> {
 
   void item() {
     substring = fileargs[0];
+    // print(images);
+    // print(fileargs);
+    // print(substring);
     newindex = images.indexOf(images.where((element) => element.contains(substring) as bool).toList()[0]);
   }
 
