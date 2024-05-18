@@ -98,7 +98,7 @@ class ZipViewSet(generics.ListAPIView):
         with ZipFile('media/zips/' + file.name) as zf:
             for name in zf.namelist():
                 zf.extract(name, 'media/images/')
-                if Path('media/images/' + name).suffix in ['.jpg', '.jpeg', '.png']:
+                if Path('media/images/' + name).suffix.lower() in ['.jpg', '.jpeg', '.png']:
                     # image = UploadFile.objects.create(file=file.name, user=request.user)
 
                     boxes, _, labels = ensemble_boxes(
@@ -117,8 +117,7 @@ class ZipViewSet(generics.ListAPIView):
                     imwrite('media/images/' + name, bbox_image)
                     count_deer = count_labels['1']
 
-                    pred = detections(detector, model, 'media/images/' + name)
-                    # print(pred)
+                    pred = detections(boxes, model, 'media/images/' + name)
 
                     json_ans['data'].append(
                          {'column1': name, 'column2': str(count_deer),'column3': [pred]})

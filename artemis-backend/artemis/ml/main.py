@@ -81,9 +81,9 @@ def predict(
     return id2label[str(class_id)]
 
 
-def detections(detection_model, classifier_model, path_to_image, verbose=True):
-    yolo_pred = detection_model(path_to_image, verbose=verbose)[0]
-    bbox = yolo_pred.boxes.xyxyn
+def detections(bbox, classifier_model, path_to_image, verbose=True):
+    # yolo_pred = detection_model(path_to_image, verbose=verbose)[0]
+    # bbox = yolo_pred.boxes.xyxyn
 
     preds = []
 
