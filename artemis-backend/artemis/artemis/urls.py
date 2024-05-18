@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from main.views import FilesViewSet, UpdatePassword, ListUploadedFiles, ZipViewSet
+from main.views import FilesViewSet, UpdatePassword, ListUploadedFiles, ZipViewSet, ActiveLearningViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns = [
@@ -26,5 +26,6 @@ urlpatterns = [
     path('files/', FilesViewSet.as_view(), name='upload'),
     path('zip/', ZipViewSet.as_view(), name='upload'),
     path('change/', UpdatePassword.as_view(), name='change'),
-    path('list_files/', ListUploadedFiles.as_view(), name='list_files')
+    path('list_files/', ListUploadedFiles.as_view(), name='list_files'),
+    path('active_learning/', ActiveLearningViewSet.as_view(), name='upload'),
 ]

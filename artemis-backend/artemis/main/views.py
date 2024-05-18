@@ -55,9 +55,10 @@ if model is None:
 
 models = [detector, ]
 
-def clear_dirs(path_to_directory):
+def clear_dirs(path_to_directory, save_image=True):
     for i in os.listdir(path_to_directory):
-        shutil.rmtree(path_to_directory + i)
+        if i not in ['labels/', 'images/']:
+            shutil.rmtree(path_to_directory + i)
 
 def create_dirs(path_to_directory):
     p = Path(path_to_directory)
@@ -130,6 +131,8 @@ class ZipViewSet(generics.ListAPIView):
                     pred = detections(boxes, model, 'media/images/' + name)
                     if isinstance(pred, str):
                         pred = [pred, ]
+
+                    print(pred)
 
                     count_label_model = count_classes_model(count_label_model, pred)
 
@@ -216,6 +219,8 @@ class FilesViewSet(generics.ListAPIView):
                 )
                 count_label_detector = count_classes(labels)
 
+                print(boxes, labels)
+
                 bbox_image = draw_boxes_from_list(
                     image_path1=('media/images/' + str(image.file)),
                     boxes_1=boxes,
@@ -227,6 +232,7 @@ class FilesViewSet(generics.ListAPIView):
                 if isinstance(pred, str):
                     pred = [pred, ]
 
+                print(pred)
                 count_label_model = count_classes_model(count_label_model, pred)
 
                 json_ans['data'].append(
@@ -273,6 +279,23 @@ class FilesViewSet(generics.ListAPIView):
 
         clear_dirs('media/')
         return response
+
+class ActiveLearningViewSet(generics.ListAPIView):
+    queryset = UploadFile.objects.all()
+    serializer_class = FileSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+
+        data = request.data.getlist('file')
+        if data is None:
+            data = request.FILES.getlist('files')
+
+        for file in data:
+            FileSystemStorage(location='media/images/').save(file.name, file)
+            UploadFile.objects.create(file=file.name, user=request.user)
+
+        return HttpResponse(status=200)
 
 
 class UpdatePassword(APIView):
