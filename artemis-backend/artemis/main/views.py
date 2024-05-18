@@ -32,6 +32,13 @@ from ml.cv2_converter import draw_boxes_from_list
 from ml.ensemble import ensemble_boxes, count_classes
 from ml.main import load_model, detections
 
+deer_names = {
+    'Deer': {'ru': 'Олень', 'lat': 'Cervus'},
+    'Musk Deer': {'ru': 'Кабарга', 'lat': 'Moschus'},
+    'Roe Deer': {'ru': 'Косуля', 'lat': 'Capreolus'},
+}
+
+
 detector_cache_key = 'detector_cache'
 detector = cache.get(detector_cache_key)
 
@@ -92,7 +99,7 @@ class ZipViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        file = request.FILES.get('files')
+        file = request.data.get('file')
         FileSystemStorage(location='media/zips/').save(file.name, file)
 
         with ZipFile('media/zips/' + file.name) as zf:
@@ -118,16 +125,15 @@ class ZipViewSet(generics.ListAPIView):
                     count_deer = count_labels['1']
 
                     pred = detections(boxes, model, 'media/images/' + name)
-
+                    if isinstance(pred, str):
+                        pred = [pred, ]
                     json_ans['data'].append(
-                         {'column1': name, 'column2': str(count_deer),'column3': [pred]})
+                         {'column1': name, 'column2': str(count_deer),
+                          'column3': [deer_names[p]['ru'] for p in pred],
+                          'column4': [deer_names[p]['lat'] for p in pred]})
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
-                # video
-                elif Path('media/images/' + file.name).suffix in ['.mp4', '.mkv', '.mov', '.MOV']:
-                    json_ans['data'].append(
-                        {'column1': str(file.name), 'column2': str(2), 'column3': ['Deer']})
 
             df = pd.DataFrame({'class': ['Косуля', 'Олень', 'Кабарга'], 'count': [313, 1284, 6]})
 
@@ -188,12 +194,11 @@ class FilesViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        for file in request.FILES.getlist('files'):
+        for file in request.data.getlist('file'):
             FileSystemStorage(location='media/images/').save(file.name, file)
             # image
-            if Path('media/images/' + file.name).suffix in ['.jpg', '.jpeg', '.png', '.JPG']:
+            if Path('media/images/' + file.name).suffix.lower() in ['.jpg', '.jpeg', '.png']:
                 image = UploadFile.objects.create(file=file.name, user=request.user)
-                print(image.file)
                 boxes, _, labels = ensemble_boxes(
                     models=models,
                     path_to_image=('media/images/' + str(image.file)),
@@ -209,22 +214,18 @@ class FilesViewSet(generics.ListAPIView):
                 )
                 imwrite('media/images/' + str(image.file), bbox_image)
                 count_deer = count_labels['1']
-                # count_short, count_long, _ = count_labels['4'], count_labels['1'], count_labels['2']
 
-                pred = detections(detector, model, 'media/images/' + str(image.file))
-                print(pred)
+                pred = detections(boxes, model, 'media/images/' + str(image.file))
+                if isinstance(pred, str):
+                    pred = [pred, ]
 
                 json_ans['data'].append(
-                     {'column1': str(file.name), 'column2': str(count_deer),'column3': [pred]})
+                    {'column1': str(file.name), 'column2': str(count_deer),
+                     'column3': [deer_names[p]['ru'] for p in pred],
+                     'column4': [deer_names[p]['lat'] for p in pred]})
 
                 with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                     cur_zipfile.write('media/images/' + str(image.file), str(file.name))
-            # video
-            elif Path('media/images/' + file.name).suffix in ['.mp4', '.mkv', '.mov', '.MOV']:
-                video = UploadFile.objects.create(file='media/images/' + file.name, user=request.user)
-                print(video)
-                json_ans['data'].append(
-                    {'column1': str(file.name), 'column2': str(2), 'column3': ['Deer']})
 
             with open('media/jsons/data.txt', 'w') as outfile:
                  json.dump(json_ans, outfile)
