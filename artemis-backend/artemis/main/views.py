@@ -90,7 +90,9 @@ class ZipViewSet(generics.ListAPIView):
         # print(request.FILES['files'])
         # return HttpResponse(status=204)
 
-        # file = request.FILES['files']
+        file = request.data.get('file')
+        if file is None:
+            file = request.FILES.get('files')
 
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
@@ -102,7 +104,6 @@ class ZipViewSet(generics.ListAPIView):
                              'Deer': 0,
                              'Roe Deer': 0}
 
-        file = request.data.get('file')
         FileSystemStorage(location='media/zips/').save(file.name, file)
 
         with ZipFile('media/zips/' + file.name) as zf:
@@ -189,6 +190,10 @@ class FilesViewSet(generics.ListAPIView):
 
         # file = request.FILES['files']
 
+        data = request.data.getlist('file')
+        if data is None:
+            data = request.FILES.getlist('files')
+
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
 
@@ -199,7 +204,7 @@ class FilesViewSet(generics.ListAPIView):
                              'Deer': 0,
                              'Roe Deer': 0,}
 
-        for file in request.data.getlist('file'):
+        for file in data:
             FileSystemStorage(location='media/images/').save(file.name, file)
             # image
             if Path('media/images/' + file.name).suffix.lower() in ['.jpg', '.jpeg', '.png']:
