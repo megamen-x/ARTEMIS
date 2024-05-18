@@ -8,4 +8,4 @@ ensemble_boxes
 ultralytics
 pandas
 plotly
-kaleido
+kaleido==0.1.0post1

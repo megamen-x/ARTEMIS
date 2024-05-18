@@ -527,7 +527,7 @@ class RegState extends State<RegWidget> {
                                           style: TextStyle(
                                             color: Color(0xFF000000),
                                             fontFamily: 'Inter',
-                                            fontSize: 26*fframe,
+                                            fontSize: 23*fframe,
                                             fontWeight: FontWeight.w700,
                                             height: 1.3*fframe/frame,
                                           ),

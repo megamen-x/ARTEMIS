@@ -16,6 +16,7 @@ from rest_framework import generics
 import pandas as pd
 import plotly
 import plotly.express as px
+import kaleido
 
 from .serializers import ImageSerializer
 from .models import UploadImageTest, UploadFile
@@ -120,7 +121,7 @@ class ZipViewSet(generics.ListAPIView):
                     # print(pred)
 
                     json_ans['data'].append(
-                         {'column1': name, 'column2': str(count_deer),'column3': pred})
+                         {'column1': name, 'column2': str(count_deer),'column3': [pred]})
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
@@ -150,7 +151,7 @@ class ZipViewSet(generics.ListAPIView):
             fig.update_yaxes(title='Суммарное количество на фотографиях')
             fig.update_xaxes(title='Вид оленя', )
 
-            fig.write_image("media/plots/deers_fig.jpeg")
+            fig.write_image("media/plots/deers_fig.jpeg", format='jpeg', engine='kaleido')
 
             with open('media/jsons/data.txt', 'w') as outfile:
                  json.dump(json_ans, outfile)

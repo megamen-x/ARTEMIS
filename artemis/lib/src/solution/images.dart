@@ -45,6 +45,7 @@ class ImagesState extends State<ImagesWidget> {
   bool zipplot = false;
 
   var shortcall = ShortenFileName();
+
   String current = Directory.current.path;
   late Uri fileprovider = Uri.parse('file:///${'$current/responce'}');
 
@@ -56,6 +57,9 @@ class ImagesState extends State<ImagesWidget> {
     super.initState();
     dataList = filesarr;
   }
+
+  final _imageController = PageController();
+  String plotName = '';
 
   Future<void> uploadZip(context) async {
 
@@ -95,13 +99,29 @@ class ImagesState extends State<ImagesWidget> {
         var response = await http.Response.fromStream(streamedResponse);
         print(response.statusCode);
         if (response.statusCode == 200) {
-          unzipFileFromResponse(response.bodyBytes);
-
+          unzipFileFromResponse(response.bodyBytes, 'zip/');
+          String path = '';
+          if (Platform.isWindows || Platform.isLinux) path = "./responce/zip/data.txt";
+          File dataFile = File(path);
+          String dataString = dataFile.readAsStringSync();
+          final responceMap = jsonDecode(dataString);
+          final dataMap = jsonDecode(jsonEncode(responceMap["data"]));
           setState(() {
             dataClearFlag = true;
             dataEmptyFlag = false;
             loadingFlag2 = false;
+            dataList = [];
           });
+          setState(() {
+            var tmp = dataMap.length;
+            for (var i = 0; i < tmp; i++) {
+              DataModel newData = DataModel.fromJson(dataMap[i]);
+              dataList.add(newData);
+            }
+            zipplot = true;
+            plotName = './responce/zip/deers_fig.jpeg';
+          });
+
         }
 
       } on SocketException {
@@ -164,9 +184,9 @@ class ImagesState extends State<ImagesWidget> {
       var streamedResponse  = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
       if (response.statusCode == 200) {
-        unzipFileFromResponse(response.bodyBytes);
+        unzipFileFromResponse(response.bodyBytes, 'images/');
         String path = '';
-        if (Platform.isWindows || Platform.isLinux) path = "./responce/data.txt";
+        if (Platform.isWindows || Platform.isLinux) path = "./responce/images/data.txt";
         File dataFile = File(path);
         String dataString = dataFile.readAsStringSync();
         final responceMap = jsonDecode(dataString);
@@ -183,8 +203,6 @@ class ImagesState extends State<ImagesWidget> {
             DataModel newData = DataModel.fromJson(dataMap[i]);
             dataList.add(newData);
           }
-          String resp = '\\responce';
-          current = current + resp;
         });
       }
       else {
@@ -220,10 +238,12 @@ class ImagesState extends State<ImagesWidget> {
     if (Platform.isWindows || Platform.isLinux) {
       images = [];
       dataList = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
-      deleteFilesInFolder("./responce");
+      deleteFilesInFolder("./responce/images");
+      deleteFilesInFolder("./responce/zip");
     }
     setState(() {
       dataEmptyFlag = false;
+      zipplot = false;
     });
   }
 
@@ -240,7 +260,7 @@ class ImagesState extends State<ImagesWidget> {
   }
 
   // unzip server responce
-  Future<void> unzipFileFromResponse(List<int> responseBody) async {
+  Future<void> unzipFileFromResponse(List<int> responseBody, String path) async {
     final archive = ZipDecoder().decodeBytes(responseBody);
     images = [];
     for (final file in archive) {
@@ -249,21 +269,21 @@ class ImagesState extends State<ImagesWidget> {
         final data = file.content as List<int>;
         if (filename.contains('.jpg') || filename.contains('.JPG') || filename.contains('.jpeg') || filename.contains('.JPEG') || filename.contains('.png')|| filename.contains('.PNG') || filename.contains('.bmp')) {
           if (Platform.isWindows || Platform.isLinux) {
-            File('responce/$filename')
+            File('responce/$path$filename')
             ..createSync(recursive: true)
             ..writeAsBytesSync(data);
-            images.add('responce/$filename');
+            images.add('responce/$path$filename');
           }
         }
         else {
           if (Platform.isWindows || Platform.isLinux) {
-            File('responce/$filename')
+            File('responce/$path$filename')
             ..createSync(recursive: true)
             ..writeAsBytesSync(data);
           }
         }
       } else {
-        await Directory('responce/$filename').create(recursive: true);
+        await Directory('responce/$path$filename').create(recursive: true);
       }
     }
   }
@@ -788,7 +808,24 @@ class ImagesState extends State<ImagesWidget> {
                                               color: Color(0xFF151515),
                                               borderRadius: BorderRadius.circular(20.0*fframe),
                                             ),
-                                            
+                                            child: 
+                                            Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: PageView.builder(
+                                                controller: _imageController,
+                                                scrollDirection: Axis.horizontal,
+                                                itemBuilder: (context, index) {
+                                                  return ClipRRect(
+                                                    child:
+                                                      Image.file(File(plotName),
+                                                        height: 420*frame,
+                                                        width: MediaQuery.of(context).size.width * 1,
+                                                        fit: BoxFit.contain,
+                                                      ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -821,7 +858,7 @@ class ImagesState extends State<ImagesWidget> {
                                                   style: TextStyle(
                                                     color: Color(0xFF000000),
                                                     fontFamily: 'Inter',
-                                                    fontSize: 23*fframe,
+                                                    fontSize: 22*fframe,
                                                     fontWeight: FontWeight.w700,
                                                     height: 1.3*fframe/frame,
                                                   ),
@@ -854,7 +891,7 @@ class ImagesState extends State<ImagesWidget> {
                                                   style: TextStyle(
                                                     color: Color(0xFF000000),
                                                     fontFamily: 'Inter',
-                                                    fontSize: 23*fframe,
+                                                    fontSize: 22*fframe,
                                                     fontWeight: FontWeight.w700,
                                                     height: 1.3*fframe/frame,
                                                   ),
@@ -878,7 +915,6 @@ class ImagesState extends State<ImagesWidget> {
                                             ),
                                             child: MaterialButton(
                                               onPressed: () {
-                                                // _fileProvider();
                                                 setState(() {
                                                   zipplot = !zipplot;
                                                 });
