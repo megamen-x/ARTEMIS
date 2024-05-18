@@ -99,7 +99,7 @@ class ZipViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        file = request.data.get('file')
+        file = request.FILES.get('files')
         FileSystemStorage(location='media/zips/').save(file.name, file)
 
         with ZipFile('media/zips/' + file.name) as zf:
@@ -129,8 +129,7 @@ class ZipViewSet(generics.ListAPIView):
                         pred = [pred, ]
                     json_ans['data'].append(
                          {'column1': name, 'column2': str(count_deer),
-                          'column3': [deer_names[p]['ru'] for p in pred],
-                          'column4': [deer_names[p]['lat'] for p in pred]})
+                          'column3': [deer_names[p] for p in pred]})
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
@@ -194,7 +193,7 @@ class FilesViewSet(generics.ListAPIView):
 
         json_ans = {"data": []}
 
-        for file in request.data.getlist('file'):
+        for file in request.FILES.getlist('files'):
             FileSystemStorage(location='media/images/').save(file.name, file)
             # image
             if Path('media/images/' + file.name).suffix.lower() in ['.jpg', '.jpeg', '.png']:
