@@ -41,10 +41,11 @@ class ImagesState extends State<ImagesWidget> {
 
   bool loadingFlag = false;
   bool dataClearFlag = false;
+  bool zipplot = false;
 
   var shortcall = ShortenFileName();
   String current = Directory.current.path;
-  late Uri fileprovider = Uri.parse('file:///$current');
+  late Uri fileprovider = Uri.parse('file:///${'$current/responce'}');
 
   List<String> newfileargs = [];
   List<DataModel> dataList = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
@@ -503,7 +504,7 @@ class ImagesState extends State<ImagesWidget> {
                       children: [
                         Container(
                           width: 1360*fframe,
-                          padding: EdgeInsets.fromLTRB(0*fframe, 0*fframe, 0*fframe, 30*fframe),
+                          padding: EdgeInsets.fromLTRB(0*fframe, 0*fframe, 0*fframe, 0*fframe),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -567,7 +568,7 @@ class ImagesState extends State<ImagesWidget> {
                               // frame
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   //  table
                                   Column(
@@ -588,7 +589,7 @@ class ImagesState extends State<ImagesWidget> {
                                       ),
                                       Container(
                                         width: 830*fframe,
-                                        height: 500*fframe,
+                                        height: 550*fframe,
                                         decoration: BoxDecoration(
                                           // 0xFF305D50
                                           color: Color(0xFFFFFFFF),
@@ -742,100 +743,162 @@ class ImagesState extends State<ImagesWidget> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
-                                      Text('КАК ПОЛЬЗОВАТЬСЯ?',
-                                        textAlign: TextAlign.center, 
-                                        style: TextStyle(
-                                          color: Color(0xFFFFFFFF),
-                                          fontFamily: 'pobeda',
-                                          fontSize: 42*fframe,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 5*fframe/frame,
-                                          height: 1.3*fframe/frame,
-                                        )
+                                      if (!zipplot)
+                                      Column(
+                                        children: [
+                                          Text('КАК ПОЛЬЗОВАТЬСЯ?',
+                                            textAlign: TextAlign.center, 
+                                            style: TextStyle(
+                                              color: Color(0xFFFFFFFF),
+                                              fontFamily: 'pobeda',
+                                              fontSize: 42*fframe,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: 5*fframe/frame,
+                                              height: 1.3*fframe/frame,
+                                            )
+                                          ),
+                                          SizedBox(
+                                            height: 20*fframe,
+                                          ),
+                                          Container(
+                                            width: 400*fframe,
+                                            child: UnorderedList(const [
+                                                "Загрузите ваши фото;",
+                                                "Дождитесь обработки;",
+                                                "Нажмите на нужную строку таблицы, чтобы детальнее изучить ее;",
+                                                "Очистите таблицу кнопкой “Очистка”;",
+                                                "Нажмите “Данные”, чтобы открыть папку с json-предсказанием модели.",
+                                            ], frame),
+                                          ),
+                                        ],
+                                      )
+                                      else
+                                      Column(
+                                        children: [
+                                          SizedBox(height: 20*fframe,),
+                                          Container(
+                                            height: 410*fframe,
+                                            width: 400*fframe,
+                                            padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFF151515),
+                                              borderRadius: BorderRadius.circular(20.0*fframe),
+                                            ),
+                                            
+                                          ),
+                                        ],
                                       ),
                                       SizedBox(
                                         height: 20*fframe,
                                       ),
-                                      Container(
-                                        width: 400*fframe,
-                                        child: UnorderedList(const [
-                                            "Загрузите ваши фото;",
-                                            "Дождитесь обработки;",
-                                            "Нажмите на нужную строку таблицы, чтобы детальнее изучить ее;",
-                                            "Очистите таблицу кнопкой “Очистка”;",
-                                            "Нажмите “Открыть json”, чтобы открыть папку с json-предсказанием модели.",
-                                        ], frame),
-                                      ),
-                                      SizedBox(
-                                        height: 20*fframe,
-                                      ),
-                                      Container(
-                                        width: 400*fframe,
-                                        height: 60*fframe,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.center,
-                                          children: <Widget>[
-                                            // download
-                                            Container(
-                                              height: 55*fframe,
-                                              padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFF9F8F6),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          // download
+                                          Container(
+                                            height: 50*fframe,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFF9F8F6),
+                                              borderRadius: BorderRadius.circular(20.0*fframe),
+                                            ),
+                                            child: MaterialButton(
+                                              onPressed: () {
+                                                _fileProvider();
+                                              },
+                                              shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(20.0*fframe),
                                               ),
-                                              child: MaterialButton(
-                                                onPressed: () {
-                                                  _fileProvider();
-                                                },
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(20.0*fframe),
-                                                ),
-                                                height: 55*fframe,
-                                                child: Text('СКАЧАТЬ JSON', 
+                                              height: 50*fframe,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
+                                                child: Text('ДАННЫЕ', 
                                                   textAlign: TextAlign.center, 
                                                   style: TextStyle(
                                                     color: Color(0xFF000000),
                                                     fontFamily: 'Inter',
-                                                    fontSize: 24*fframe,
+                                                    fontSize: 23*fframe,
                                                     fontWeight: FontWeight.w700,
                                                     height: 1.3*fframe/frame,
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                            // clear
-                                            Container(
-                                              height: 55*fframe,
-                                              padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFF9F8F6),
+                                          ),
+                                          SizedBox(width: 20*fframe,),
+                                          // clear
+                                          Container(
+                                            height: 50*fframe,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFF9F8F6),
+                                              borderRadius: BorderRadius.circular(20.0*fframe),
+                                            ),
+                                            child: MaterialButton(
+                                              onPressed: () {
+                                                loadingFlag = false;
+                                                clearData();
+                                                dataEmptyFlag = true;
+                                              },
+                                              shape: RoundedRectangleBorder(
                                                 borderRadius: BorderRadius.circular(20.0*fframe),
                                               ),
-                                              child: MaterialButton(
-                                                onPressed: () {
-                                                  loadingFlag = false;
-                                                  clearData();
-                                                  dataEmptyFlag = true;
-                                                },
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(20.0*fframe),
-                                                ),
-                                                height: 55*fframe,
+                                              height: 50*fframe,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
                                                 child: Text('ОЧИСТКА', 
                                                   textAlign: TextAlign.center, 
                                                   style: TextStyle(
                                                     color: Color(0xFF000000),
                                                     fontFamily: 'Inter',
-                                                    fontSize: 24*fframe,
+                                                    fontSize: 23*fframe,
                                                     fontWeight: FontWeight.w700,
                                                     height: 1.3*fframe/frame,
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 20*fframe,),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: <Widget>[
+                                          // download
+                                          Container(
+                                            height: 50*fframe,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFFF9F8F6),
+                                              borderRadius: BorderRadius.circular(20.0*fframe),
+                                            ),
+                                            child: MaterialButton(
+                                              onPressed: () {
+                                                // _fileProvider();
+                                                setState(() {
+                                                  zipplot = !zipplot;
+                                                });
+                                              },
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(20.0*fframe),
+                                              ),
+                                              height: 50*fframe,
+                                              child: Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 5*fframe, vertical: 0*fframe),
+                                                child: Text('ДООБУЧЕНИЕ МОДЕЛИ', 
+                                                  textAlign: TextAlign.center, 
+                                                  style: TextStyle(
+                                                    color: Color(0xFF000000),
+                                                    fontFamily: 'Inter',
+                                                    fontSize: 22*fframe,
+                                                    fontWeight: FontWeight.w700,
+                                                    height: 1.3*fframe/frame,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
