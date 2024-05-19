@@ -43,18 +43,27 @@
 
  - **Общая схема решения:**
 
- - **Использованные модели:**
-    - **```Computer Vision```**:
-      - ultralytics/YoloV9E;
 
+
+ - **Использованные модели:**
+    - **```Object Detection```**:
+      - YoloV9E;
+    - **```Object Classification ```**:
+      - EfficientNet;
+      - DINOV2;
+      - CLIP.
+  
 Ссылки на модели:
    - [YoloV9](https://docs.ultralytics.com/models/yolov9/)
+   - [EfficientNet](https://github.com/lukemelas/EfficientNet-PyTorch)
+   - [DINOV2](https://github.com/facebookresearch/dinov2)
+   - [CLIP](https://github.com/openai/CLIP)
 
 <!-- Пример генерации на основе 10 изображений:
    - [json](https://github.com/megamen-x/) -->
 
-Опробовать решение:
-   - [ARTEMIS](https://huggingface.co/spaces/AtLan9/)
+<!--Опробовать решение:
+   - [ARTEMIS](https://huggingface.co/spaces/AtLan9/) -->
 
 **Клиентская часть**
 
