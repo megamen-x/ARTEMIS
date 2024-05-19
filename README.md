@@ -53,11 +53,16 @@
       - DINOV2;
       - CLIP.
   
-Ссылки на модели:
+Ссылка на скачивание моделей:
+   - [YoloV9](https://drive.google.com/uc?export=download&id=1SNEsqtkXHAzONAvLlnLmQF89zuzJelkD)
+   - [ConvNeXt](https://drive.google.com/uc?export=download&id=1St8kyDnM7BpYPUpjJekF5_yvBDwzzGPF)
+
+Ссылки на страницы протестированных моделей:
    - [YoloV9](https://docs.ultralytics.com/models/yolov9/)
    - [EfficientNet](https://github.com/lukemelas/EfficientNet-PyTorch)
    - [DINOV2](https://github.com/facebookresearch/dinov2)
    - [CLIP](https://github.com/openai/CLIP)
+   - [ConvNeXt](https://github.com/facebookresearch/ConvNeXt)
 
 <!-- Пример генерации на основе 10 изображений:
    - [json](https://github.com/megamen-x/) -->
