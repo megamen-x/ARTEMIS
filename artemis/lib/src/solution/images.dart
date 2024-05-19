@@ -59,8 +59,8 @@ class ImagesState extends State<ImagesWidget> {
     dataList = filesarr;
     DataModel.updateDataModel(dataList, newLabelData);
     jsonDataList = dataList.map((dataModel) => dataModel.toJson()).toList();
-    print('----------- json ----------');
-    print(jsonDataList);
+    // print('----------- json ----------');
+    // print(jsonDataList);
   }
 
   final _imageController = PageController();
@@ -70,6 +70,8 @@ class ImagesState extends State<ImagesWidget> {
 
     setState(() {
       loadingFlag2 = true;
+      plotName = ' ';
+      zipplot = false;
     });
 
     List<File>? zipfiles = [];
@@ -245,7 +247,11 @@ class ImagesState extends State<ImagesWidget> {
           },
           body: jsonEncode(json),
       );
-      print(response.statusCode);
+      // print(response.statusCode);
+      if (response.statusCode == 200) {
+        Sample.AlshowDialog(context, 'Обучение модели запущено', 'Обучение может занять продолжительное время');
+      }
+      Sample.AlshowDialog(context, 'Обучение модели запущено', 'Обучение может занять продолжительное время');
     } on SocketException {
         setState(() {
           Sample.AlshowDialog(context, 'Нет соединения с сервером!', 'Проверьте состояние сервера и попробуйте снова');
@@ -415,18 +421,18 @@ class ImagesState extends State<ImagesWidget> {
                                     ),
                                     child: OutlinedButton(
                                       onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          PageRouteBuilder(
-                                            pageBuilder: (_, __, ___) =>  VideosWidget(filesarr: filesarr, dataEmptyFlag: dataEmptyFlag, prevpage: ImagesWidget(filesarr: filesarr, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData:userData), userData:userData),
-                                            transitionsBuilder: (_, animation, __, child) {
-                                              return FadeTransition(
-                                                opacity: animation,
-                                                child: child,
-                                              );
-                                            }
-                                          )
-                                        );
+                                        // Navigator.push(
+                                        //   context,
+                                        //   PageRouteBuilder(
+                                        //     pageBuilder: (_, __, ___) =>  VideosWidget(filesarr: filesarr, dataEmptyFlag: dataEmptyFlag, prevpage: ImagesWidget(filesarr: filesarr, dataEmptyFlag: dataEmptyFlag, prevpage: prevpage, userData:userData), userData:userData),
+                                        //     transitionsBuilder: (_, animation, __, child) {
+                                        //       return FadeTransition(
+                                        //         opacity: animation,
+                                        //         child: child,
+                                        //       );
+                                        //     }
+                                        //   )
+                                        // );
                                       },
                                       style: OutlinedButton.styleFrom(
                                         padding: EdgeInsets.fromLTRB(0*frame, 0*frame, 0*frame, 0*frame),
@@ -954,7 +960,7 @@ class ImagesState extends State<ImagesWidget> {
                                             child: MaterialButton(
                                               onPressed: () {
                                                 setState(() {
-                                                  zipplot = !zipplot;
+                                                  uploadNewData(context);
                                                 });
                                               },
                                               shape: RoundedRectangleBorder(

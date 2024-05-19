@@ -268,15 +268,15 @@ class WelcomeState extends State<WelcomeWidget> {
                         ),
                         // btns
                         Container(
-                          width: 300*fframe,
+                          width: 450*fframe,
                           height: 60*fframe,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: <Widget>[
                               // sign-in
                               Container(
-                                width: 130*fframe,
+                                // width: 130*fframe,
                                 height: 55*fframe,
                                 decoration: BoxDecoration(
                                   color: Color(0xFFF9F8F6),
@@ -301,57 +301,60 @@ class WelcomeState extends State<WelcomeWidget> {
                                     borderRadius: BorderRadius.circular(20.0*fframe),
                                   ),
                                   height: 55*fframe,
-                                  child: Text('SIGN IN', 
-                                    textAlign: TextAlign.center, 
-                                    style: TextStyle(
-                                      color: Color(0xFF000000),
-                                      fontFamily: 'Inter',
-                                      fontSize: 26*fframe,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.3*fframe/frame,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text('ВОЙТИ В АККАУНТ', 
+                                      textAlign: TextAlign.center, 
+                                      style: TextStyle(
+                                        color: Color(0xFF000000),
+                                        fontFamily: 'Inter',
+                                        fontSize: 26*fframe,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.3*fframe/frame,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                               // sign-up
-                              Container(
-                                width: 130*fframe,
-                                height: 55*fframe,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFF9F8F6),
-                                  borderRadius: BorderRadius.circular(20.0*fframe),
-                                ),
-                                child: MaterialButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) =>  RegWidget(prevpage: WelcomeWidget()),
-                                        transitionsBuilder: (_, animation, __, child) {
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: child,
-                                          );
-                                        }
-                                      )
-                                    );
-                                  },
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20.0*fframe),
-                                  ),
-                                  height: 55*fframe,
-                                  child: Text('SIGN UP', 
-                                    textAlign: TextAlign.center, 
-                                    style: TextStyle(
-                                      color: Color(0xFF000000),
-                                      fontFamily: 'Inter',
-                                      fontSize: 26*fframe,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.3*fframe/frame,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              // Container(
+                              //   // width: 130*fframe,
+                              //   height: 55*fframe,
+                              //   decoration: BoxDecoration(
+                              //     color: Color(0xFFF9F8F6),
+                              //     borderRadius: BorderRadius.circular(20.0*fframe),
+                              //   ),
+                              //   child: MaterialButton(
+                              //     onPressed: () {
+                              //       Navigator.push(
+                              //         context,
+                              //         PageRouteBuilder(
+                              //           pageBuilder: (_, __, ___) =>  RegWidget(prevpage: WelcomeWidget()),
+                              //           transitionsBuilder: (_, animation, __, child) {
+                              //             return FadeTransition(
+                              //               opacity: animation,
+                              //               child: child,
+                              //             );
+                              //           }
+                              //         )
+                              //       );
+                              //     },
+                              //     shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(20.0*fframe),
+                              //     ),
+                              //     height: 55*fframe,
+                              //     child: Text('СОЗДАТЬ АККАУНТ', 
+                              //       textAlign: TextAlign.center, 
+                              //       style: TextStyle(
+                              //         color: Color(0xFF000000),
+                              //         fontFamily: 'Inter',
+                              //         fontSize: 26*fframe,
+                              //         fontWeight: FontWeight.w700,
+                              //         height: 1.3*fframe/frame,
+                              //       ),
+                              //     ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),

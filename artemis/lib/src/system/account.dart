@@ -167,10 +167,11 @@ class AccState extends State<AccWidget> {
                                     child: OutlinedButton(
                                       onPressed: () {
                                         List<DataModel> empty = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
+                                        List<String> emptyList = ['', '', ''];
                                         Navigator.push(
                                           context,
                                           PageRouteBuilder(
-                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: false, prevpage: prevpage, userData:userData, newLabelData: []),
+                                            pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: false, prevpage: prevpage, userData:userData, newLabelData: emptyList),
                                             transitionsBuilder: (_, animation, __, child) {
                                               return FadeTransition(
                                                 opacity: animation,
@@ -331,10 +332,12 @@ class AccState extends State<AccWidget> {
                                 ),
                                 child: OutlinedButton(
                                   onPressed: () {
+                                    List<DataModel> empty = [DataModel(column1: ' ', column2: ' ', column3: [' ',])];
+                                    List<String> emptyList = ['', '', ''];
                                     Navigator.push(
                                       context,
                                       PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) =>  prevpage,
+                                        pageBuilder: (_, __, ___) =>  ImagesWidget(filesarr: empty, dataEmptyFlag: false, prevpage: prevpage, userData:userData, newLabelData: emptyList),
                                         transitionsBuilder: (_, animation, __, child) {
                                           return FadeTransition(
                                             opacity: animation,
