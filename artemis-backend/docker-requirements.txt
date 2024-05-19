@@ -1,0 +1,14 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+Pillow
+opencv-python
+djoser
+ensemble_boxes
+ultralytics
+pandas
+plotly
+kaleido
+open-clip-torch
+scikit-learn
+transformers
