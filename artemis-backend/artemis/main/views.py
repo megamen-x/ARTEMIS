@@ -8,15 +8,18 @@ from rest_framework.views import APIView
 from rest_framework import generics, viewsets
 from django.http import HttpResponse
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, IsAuthenticated
-from cv2 import imwrite
+from cv2 import imwrite, imread
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework import generics
 import pandas as pd
 import plotly
+from torchvision.io import read_image
+from torchvision.utils import save_image
 import plotly.express as px
 import kaleido
+import cv2
 
 from .serializers import ImageSerializer
 from .models import UploadImageTest, UploadFile
@@ -30,7 +33,7 @@ from ultralytics import YOLO, RTDETR
 sys.path.append('../ml')
 from ml.cv2_converter import draw_boxes_from_list
 from ml.ensemble import ensemble_boxes, count_classes, count_classes_model
-from ml.main import load_model, detections
+from ml.main import load_model, detections, label2id
 
 deer_names = {
     'Deer': 'Олень - Cervus',
@@ -57,7 +60,7 @@ models = [detector, ]
 
 def clear_dirs(path_to_directory, save_image=True):
     for i in os.listdir(path_to_directory):
-        if i not in ['labels/', 'images/']:
+        if i not in ['labels', 'images']:
             shutil.rmtree(path_to_directory + i)
 
 def create_dirs(path_to_directory):
@@ -70,6 +73,8 @@ def create_dirs(path_to_directory):
         os.makedirs(p / 'zips')
     if 'plots' not in os.listdir(p):
         os.makedirs(p / 'plots')
+    if 'labels' not in os.listdir(p):
+        os.makedirs(p / 'labels')
 
 class ListUploadedFiles(generics.ListAPIView):
     queryset = UploadImageTest.objects.all()
@@ -119,7 +124,10 @@ class ZipViewSet(generics.ListAPIView):
                         # weights=weights
                     )
 
-                    count_label_detector = count_classes(labels)
+                    if len(labels) != 0:
+                        count_label_detector = count_classes(labels)
+                    else:
+                        count_label_detector = {'1': 0, '2': 0, '3': 0}
 
                     bbox_image = draw_boxes_from_list(
                         image_path1=('media/images/' + name),
@@ -129,12 +137,17 @@ class ZipViewSet(generics.ListAPIView):
                     imwrite('media/images/' + name, bbox_image)
 
                     pred = detections(boxes, model, 'media/images/' + name)
-                    if isinstance(pred, str):
-                        pred = [pred, ]
 
-                    print(pred)
-
-                    count_label_model = count_classes_model(count_label_model, pred)
+                    if pred:
+                        if isinstance(pred, str):
+                            pred = [pred, ]
+                        yolo_label = [f"{label2id[pred[0]]} {box[0]} {box[1]} {box[2]} {box[3]}\n" for box in boxes]
+                        count_label_model = count_classes_model(count_label_model, pred)
+                        type = 'a' if not os.path.exists('media/labels/' + Path(str(file.name)).stem + '.txt') else 'w'
+                        with open('media/labels/' + Path(name).stem + '.txt', type) as f:
+                            print(''.join(yolo_label), file=f)
+                    else:
+                        pred = []
 
                     json_ans['data'].append(
                          {'column1': name, 'column2': str(count_label_detector['1']),
@@ -142,6 +155,8 @@ class ZipViewSet(generics.ListAPIView):
 
                     with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
                         cur_zipfile.write('media/images/' + name, name)
+
+
 
             df = pd.DataFrame({'class': ['Кабарга', 'Олень', 'Косуля'],
                                'count': count_label_model.values()})
@@ -196,7 +211,7 @@ class FilesViewSet(generics.ListAPIView):
         data = request.data.getlist('file')
         if len(data) == 0:
             data = request.FILES.getlist('files')
-        print(data)
+
         if 'media' not in os.listdir('.'):
             os.mkdir('media/')
 
@@ -217,9 +232,11 @@ class FilesViewSet(generics.ListAPIView):
                     path_to_image=('media/images/' + str(image.file)),
                     # weights=weights
                 )
-                count_label_detector = count_classes(labels)
 
-                print(boxes, labels)
+                if len(labels) != 0:
+                    count_label_detector = count_classes(labels)
+                else:
+                    count_label_detector = {'1': 0, '2': 0, '3': 0}
 
                 bbox_image = draw_boxes_from_list(
                     image_path1=('media/images/' + str(image.file)),
@@ -227,14 +244,18 @@ class FilesViewSet(generics.ListAPIView):
                     labels1=labels
                 )
                 imwrite('media/images/' + str(image.file), bbox_image)
-
                 pred = detections(boxes, model, 'media/images/' + str(image.file))
-                if isinstance(pred, str):
-                    pred = [pred, ]
 
-                print(pred)
-                count_label_model = count_classes_model(count_label_model, pred)
-
+                if pred:
+                    if isinstance(pred, str):
+                        pred = [pred, ]
+                    count_label_model = count_classes_model(count_label_model, pred)
+                    yolo_label = [f"{label2id[pred[0]]} {box[0]} {box[1]} {box[2]} {box[3]}\n" for box in boxes]
+                    type = 'a' if not os.path.exists('media/labels/' + Path(str(file.name)).stem + '.txt') else 'w'
+                    with open('media/labels/' + Path(str(file.name)).stem + '.txt', type) as f:
+                        print(''.join(yolo_label), file=f)
+                else:
+                    pred = []
                 json_ans['data'].append(
                     {'column1': str(file.name), 'column2': str(count_label_detector['1']),
                      'column3': [deer_names[p] for p in pred]})
@@ -269,6 +290,10 @@ class FilesViewSet(generics.ListAPIView):
             with open('media/jsons/data.txt', 'w') as outfile:
                  json.dump(json_ans, outfile)
 
+        if len(json_ans['data']) == 0:
+            with open('media/jsons/data.txt', 'w') as outfile:
+                 json.dump(json_ans, outfile)
+
         with ZipFile('media/archives/file.zip', 'a') as cur_zipfile:
             cur_zipfile.write('media/jsons/data.txt', 'data.txt')
             cur_zipfile.write("media/plots/deers_fig.jpeg", "deers_fig.jpeg")
@@ -287,13 +312,65 @@ class ActiveLearningViewSet(generics.ListAPIView):
 
     def post(self, request, *args, **kwargs):
 
-        data = request.data.getlist('file')
-        if data is None:
-            data = request.FILES.getlist('files')
+        if 'wrong_detections' not in os.listdir('.'):
+            os.mkdir('wrong_detections/')
 
-        for file in data:
-            FileSystemStorage(location='media/images/').save(file.name, file)
+        latid2label = {
+            'Олень - Cervus': '0',
+            'Кабарга - Moschus': '1',
+            'Косуля - Capreolus': '2',
+        }
+
+        file = request.data.get('file')
+        if file is None:
+            file = request.FILES.get('files')
+
+        if 'wrong_detections' not in os.listdir('.'):
+            os.mkdir('wrong_detections/')
+        for dir in ['Deer', 'Musk Deer', 'Roe Deer']:
+            if dir not in os.listdir('wrong_detections/'):
+                os.makedirs('wrong_detections/' + dir)
+
+        if Path(file.name).suffix.lower() == '.json':
+            FileSystemStorage(location='media/jsons/').save(file.name, file)
             UploadFile.objects.create(file=file.name, user=request.user)
+
+            with open('media/jsons/' + file.name) as f:
+                data = json.load(f)
+                data = data.get('data')
+
+            if data is None:
+                return HttpResponse(status=400)
+
+            for d in data:
+                file_name = d['column1']
+                id = latid2label[d['column3'][0]]
+                label_name = Path(d['column1']).stem + '.txt'
+                image = imread('media/images/' + file_name)
+                height, width, _ = image.shape
+
+                with open('media/labels/' + label_name, 'r') as f:
+                    _, x_min, y_min, x_max, y_max = f.read().replace('\n', '').split()
+
+                    x_min = int(float(x_min) * width)
+                    y_min = int(float(y_min) * height)
+                    x_max = int(float(x_max) * width)
+                    y_max = int(float(y_max) * height)
+
+                    w = x_max - x_min
+                    h = y_max - y_min
+
+                    crop = image[y_min + 3:y_min + h - 3,
+                           x_min + 3:x_min + w - 3]
+
+                file_path = ''
+                if id == '0':
+                    file_path = 'wrong_detections/Deer/'
+                elif id == '1':
+                    file_path = 'wrong_detections/Musk Deer/'
+                elif id == '2':
+                    file_path = 'wrong_detections/Roe Deer/'
+                cv2.imwrite(file_path + file_name, crop)
 
         return HttpResponse(status=200)
 
