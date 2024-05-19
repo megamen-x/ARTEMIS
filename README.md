@@ -82,15 +82,15 @@
 
 ## <h3 align="start"><a id="title3">Тестирование решения</a></h3> 
 
-Данный репозиторий предполагает несколько возможных конфигураций тестирования решения:
+Данный репозиторий предполагает следующую конфигурацию тестирования решения:
 
-  **1. ```Gradio + ML-models (пункт 1);```**
+  <!--**1. ```Gradio + ML-models (пункт 1);```**-->
   
-  **2. ```Flutter + Django + ML-models (пункт 2-4);```**
+  **```Flutter + Django + ML-models;```**
 
   <br />
 
-<details>
+<!--<details>
   <summary> <strong><i> Пункт 1. Тестирование моделей с минимальным приложением на Gradio:</i></strong> </summary>
   
   - В Visual Studio Code (**Windows-PowerShell activation recommended**) через терминал последовательно выполнить следующие команды:
@@ -125,10 +125,10 @@
     gradio app.py
     ```
 
-</details> 
+</details> -->
 
 <details>
-  <summary> <strong><i> Пункт 2. Запуск Django Rest Framework-сервера:</i></strong> </summary>
+  <summary> <strong><i> Пункт 1. Запуск Django Rest Framework-сервера:</i></strong> </summary>
   
   - В Visual Studio Code (**Windows-PowerShell activation recommended**) через терминал последовательно выполнить следующие команды:
   
@@ -166,7 +166,7 @@
 </details> 
 
 <details>
-  <summary> <strong><i> Пункт 3. Запуск Flutter приложения на устройстве с Windows или Linux:</i></strong> </summary>
+  <summary> <strong><i> Пункт 2. Запуск Flutter приложения на устройстве с Windows или Linux:</i></strong> </summary>
   
   - Перейдите в директорию **```Release```** на вашем устройстве и запустите приложение.
 
@@ -179,7 +179,7 @@
 </details> 
 
 <details>
-  <summary> <strong><i> Пункт 4. Работа с Flutter приложением в debug режиме:</i></strong> </summary>
+  <summary> <strong><i> Пункт 3. Работа с Flutter приложением в debug режиме:</i></strong> </summary>
   
   - Если у вас установлен Flutter (и его SDK):
     
