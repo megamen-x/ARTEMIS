@@ -43,7 +43,7 @@
 
  - **Общая схема решения:**
 
-
+<img width="100%" src="https://github.com/megamen-x/ARTEMIS/blob/main/artemis/assets/images/github/sheme.png" alt="megamen sheme">
 
  - **Использованные модели:**
     - **```Object Detection```**:
