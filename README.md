@@ -10,9 +10,9 @@
     <!-- <p><strong>Приложение для классификации парнокопытных на примере трех видов (подвидов) рода "олени".</strong></p> -->
     Создано <strong>megamen</strong>, совместно с <br /> <strong> Министерством природных ресурсов и экологии Российской Федерации</strong>
     <br /><br />
-    <a href="https://github.com/megamen-x/" style="color: black;">Сообщить об ошибке</a>
+    <a href="https://github.com/megamen-x/ARTEMIS/issues" style="color: black;">Сообщить об ошибке</a>
     ·
-    <a href="https://github.com/megamen-x/" style="color: black;">Предложить улучшение</a>
+    <a href="https://github.com/megamen-x/ARTEMIS/discussions/1" style="color: black;">Предложить улучшение</a>
   </p>
 </div>
 
@@ -27,7 +27,7 @@
 
 Ключевые функции программного модуля:
 * классификация парнокопытных на фотографии и видео;
-* экспорт результатов обработки в формате json;
+* экспорт результатов обработки в графическом и текстовом виде;
 * история обработки фотографий и видео;
 * полная автономность при локальном развертывании;
 
@@ -63,12 +63,6 @@
    - [DINOV2](https://github.com/facebookresearch/dinov2)
    - [CLIP](https://github.com/openai/CLIP)
    - [ConvNeXt](https://github.com/facebookresearch/ConvNeXt)
-
-<!-- Пример генерации на основе 10 изображений:
-   - [json](https://github.com/megamen-x/) -->
-
-<!--Опробовать решение:
-   - [ARTEMIS](https://huggingface.co/spaces/AtLan9/) -->
 
 **Клиентская часть**
 
