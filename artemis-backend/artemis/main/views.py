@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import shutil
 import sys
 from pathlib import Path
@@ -33,7 +34,8 @@ from ultralytics import YOLO, RTDETR
 sys.path.append('../ml')
 from ml.cv2_converter import draw_boxes_from_list
 from ml.ensemble import ensemble_boxes, count_classes, count_classes_model
-from ml.main import load_model, detections, label2id
+from ml.main import *
+from ml.train_clip import *
 
 deer_names = {
     'Deer': 'Олень - Cervus',
@@ -41,20 +43,33 @@ deer_names = {
     'Roe Deer': 'Косуля - Capreolus',
 }
 
-
 detector_cache_key = 'detector_cache'
 detector = cache.get(detector_cache_key)
+
+preprocess_cache_key = 'preprocess_cache'
+preprocess = cache.get(preprocess_cache_key)
 
 model_cache_key = 'model_cache'
 model = cache.get(model_cache_key)
 
+# vit_cache_key = 'vit_cache'
+# vit_backbone = cache.get(vit_cache_key)
+#
+# preprocess_slip_key = 'preprocess_slip_cache'
+# preprocess_slip = cache.get(preprocess_slip_key)
+
 if detector is None:
-    detector = YOLO(os.path.join('ml', 'best.pt'))
+    detector = YOLO(os.path.join('ml', 'best_of_the_best.pt'))
     cache.set(detector_cache_key, detector, None)
 
-if model is None:
-    model = load_model(num_classes=3, path_to_model=os.path.join('ml', 'model_epoch_11.pt'), pretrained=False)
+if model is None or preprocess is None:
+    model, preprocess = load_classifier(CFG,
+        os.path.join('ml', 'convnext_large_d_320_laion2b_s29b_b131k_ft_soup_0_9752786557219679.pth'))
     cache.set(model_cache_key, model, None)
+    cache.set(preprocess_cache_key, preprocess, None)
+
+# if vit_backbone is None or preprocess_slip:
+#     vit_backbone, _, preprocess_slip = open_clip.create_model_and_transforms(CFG.model_name, pretrained=False)
 
 models = [detector, ]
 
@@ -136,7 +151,8 @@ class ZipViewSet(generics.ListAPIView):
                     )
                     imwrite('media/images/' + name, bbox_image)
 
-                    pred = detections(boxes, model, 'media/images/' + name)
+                    # pred = detections(detector, classifier, preprocess, 'media/images/' + name)
+                    pred = detections(detector, model, preprocess, 'media/images/' + name)
 
                     if pred:
                         if isinstance(pred, str):
@@ -244,8 +260,9 @@ class FilesViewSet(generics.ListAPIView):
                     labels1=labels
                 )
                 imwrite('media/images/' + str(image.file), bbox_image)
-                pred = detections(boxes, model, 'media/images/' + str(image.file))
-
+                pred = detections(detector, model, preprocess, 'media/images/' + str(image.file))
+                # pred = detections(boxes, model, 'media/images/' + str(image.file))
+                print(pred)
                 if pred:
                     if isinstance(pred, str):
                         pred = [pred, ]
@@ -327,9 +344,17 @@ class ActiveLearningViewSet(generics.ListAPIView):
 
         if 'wrong_detections' not in os.listdir('.'):
             os.mkdir('wrong_detections/')
+        if 'active_learning' not in os.listdir('.'):
+            os.mkdir('active_learning/')
+
+        for mode in ['train', 'valid']:
+            if mode not in os.listdir('wrong_detections/'):
+                os.makedirs('wrong_detections/' + mode)
+
         for dir in ['Deer', 'Musk Deer', 'Roe Deer']:
-            if dir not in os.listdir('wrong_detections/'):
-                os.makedirs('wrong_detections/' + dir)
+            for mode in ['train', 'valid']:
+                if dir not in os.listdir('wrong_detections/' + mode):
+                    os.makedirs('wrong_detections/' + mode + '/' + dir)
 
         if Path(file.name).suffix.lower() == '.json':
             FileSystemStorage(location='media/jsons/').save(file.name, file)
@@ -365,12 +390,71 @@ class ActiveLearningViewSet(generics.ListAPIView):
 
                 file_path = ''
                 if id == '0':
-                    file_path = 'wrong_detections/Deer/'
+                    file_path = 'Deer/'
                 elif id == '1':
-                    file_path = 'wrong_detections/Musk Deer/'
+                    file_path = 'Musk Deer/'
                 elif id == '2':
-                    file_path = 'wrong_detections/Roe Deer/'
-                cv2.imwrite(file_path + file_name, crop)
+                    file_path = 'Roe Deer/'
+                cv2.imwrite('wrong_detections/' + random.choice(['train/', 'valid/']) + file_path + file_name, crop)
+
+        seed_everything(CFG.seed)
+
+        if CFG.device != 'cuda':
+            raise RuntimeError(
+                'No CUDA GPUs are available. Make sure CUDA is available and do not use finetune without GPUs')
+
+        vit_backbone, _, preprocess = open_clip.create_model_and_transforms(CFG.model_name, pretrained=False)
+
+        path_load_model = os.path.join('ml', 'best_of_the_best.pt')  # путь до места, где лежит модель
+        root_dir = 'wrong_detections/'  # где хранятся данные
+
+        path_to_save_model = 'active_learning/'  # куда сохранить
+
+        train_folder = torchvision.datasets.ImageFolder(root=f'{root_dir}/train', transform=preprocess)
+        valid_folder = torchvision.datasets.ImageFolder(root=f'{root_dir}/valid', transform=preprocess)
+
+        train_dataloader = DataLoader(
+            train_folder,
+            num_workers=4,
+            pin_memory=True,
+            batch_size=CFG.train_batch_size,
+            shuffle=True
+        )
+
+        valid_dataloader = DataLoader(
+            valid_folder,
+            num_workers=4,
+            pin_memory=True,
+            batch_size=CFG.valid_batch_size,
+            shuffle=False
+        )
+
+        model = Model(vit_backbone.cpu(), cfg=CFG).to(CFG.device)
+        model.load_state_dict(torch.load(path_load_model, map_location=CFG.device))
+        model.train()
+
+        optimizer = torch.optim.AdamW(model.get_parameters())
+        scaler = torch.cuda.amp.GradScaler(enabled=CFG.autocast)
+        steps_per_epoch = math.ceil(len(train_dataloader) / CFG.acc_steps)
+        num_training_steps = math.ceil(CFG.n_epochs * steps_per_epoch)
+        num_warmup_steps = int(num_training_steps * CFG.n_warmup_steps)
+
+        scheduler = get_cosine_schedule_with_warmup(
+            optimizer,
+            num_training_steps=num_training_steps,
+            num_warmup_steps=num_warmup_steps
+        )
+
+        CFG.global_step = 0
+        for epoch in range(CFG.n_epochs):
+            train(model, train_dataloader, optimizer, scaler, scheduler, epoch)
+            score = validate(model, valid_dataloader)
+            print(f'Epoch = {epoch + 1}, score: {score}')
+            torch.save(model.state_dict(),
+                       f'{path_to_save_model}/{CFG.model_name}_{CFG.model_data}_{score}.pth')
+
+            gc.collect()
+            torch.cuda.empty_cache()
 
         return HttpResponse(status=200)
 
